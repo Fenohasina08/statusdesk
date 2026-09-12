@@ -16,3 +16,34 @@ void main() {
     ),
   );
 }
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'StatusDesk',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorSchemeSeed: Colors.indigo,
+        useMaterial3: true,
+      ),
+      home: const HomePlaceholder(),
+    );
+  }
+}
+
+class HomePlaceholder extends StatelessWidget {
+  const HomePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('StatusDesk')),
+      body: const Center(
+        child: Text('Foundations ready ✅ — Dashboard coming soon'),
+      ),
+    );
+  }
+}
