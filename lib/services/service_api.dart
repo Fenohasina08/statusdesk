@@ -28,7 +28,7 @@ class ServiceApi {
     } on SocketException {
       throw NoInternetException();
     } on TimeoutException {
-      throw TimeoutException_();
+      throw AppTimeoutException();
     } on FormatException {
       throw InvalidJsonException();
     } on ApiException {
