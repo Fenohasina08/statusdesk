@@ -11,8 +11,8 @@ class NoInternetException extends ApiException {
   NoInternetException() : super('No internet connection.');
 }
 
-class TimeoutException_ extends ApiException {
-  TimeoutException_() : super('The server is taking too long to respond.');
+class AppTimeoutException extends ApiException {
+  AppTimeoutException() : super('The server is taking too long to respond.');
 }
 
 class ServerException extends ApiException {
