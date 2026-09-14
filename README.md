@@ -1,26 +1,21 @@
-# StatusDesk
+🚀 **Projet : StatusDesk**
 
-## 📌 Description du projet
+Application Flutter qui centralise et affiche en temps réel l’état des services numériques via des APIs HTTP, avec un cache local pour la consultation hors ligne.
 
-[À compléter]
+📅 **Début :** 2 septembre 2026
+🏁 **Fin prévue :** 16 septembre 2026
 
-## 📅 Dates du projet
+🔗 **Repository :** [GitHub – StatusDesk](https://github.com/Fenohasina08/statusdesk.git?utm_source=chatgpt.com)
 
-* **Date de début :** 05 Septembre 2026
-* **Date de fin prévue :** 16 Septembre 2026
+📂 **Drive :** [Google Drive – StatusDesk](https://drive.google.com/drive/folders/1DCf_mWV_DzlxLV0WGn5jDlinncV2XRtP?utm_source=chatgpt.com)
 
-## 👥 Membres de l’équipe (pseudo Discord)
+👥 **Membres de l’équipe :**
 
-* feno_herimamy
-* le_seul01
-* sessou0637
-* fatou02
-* [À compléter]
+* RA-FANOMEZANA Herimamy Fenohasina
+* SESSOU Gaël
+* BINA Toyi
+* ISHIMWE Bonheur Chris Séraphin
+* Fatou Touré
 
-## 👨‍💼 Chef d’équipe
-
-feno_herimamy
-
-## 🎓 Mentor
-
-David BONGOUADE
+👨‍💼 **Chef d’équipe :** RA-FANOMEZANA Herimamy Fenohasina
+🎓 **Mentor :** David BONGOUADE
