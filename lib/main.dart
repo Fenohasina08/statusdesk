@@ -40,7 +40,16 @@ class HomePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('StatusDesk')),
+      appBar: AppBar(
+          title: Column(
+            children: [
+              const Text('StatusDesk',style: TextStyle(fontSize: 30),),
+              const Text("Etat des services")
+            ],
+          ),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.blue,
+      ),
       body: const Center(
         child: Text('Foundations ready ✅ — Dashboard coming soon'),
       ),
