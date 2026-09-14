@@ -1,13 +1,33 @@
-enum ServiceStatus { operational, degraded, down, unknown }
+import 'package:hive/hive.dart';
+
+part 'service.g.dart';
+
+@HiveType(typeId: 0)
+enum ServiceStatus {
+  @HiveField(0)
+  operational,
+
+  @HiveField(1)
+  degraded,
+
+  @HiveField(2)
+  down,
+
+  @HiveField(3)
+  unknown,
+}
 
 ServiceStatus serviceStatusFromString(String value) {
   switch (value.toLowerCase()) {
     case 'operational':
       return ServiceStatus.operational;
+
     case 'degraded':
       return ServiceStatus.degraded;
+
     case 'down':
       return ServiceStatus.down;
+
     default:
       return ServiceStatus.unknown;
   }
@@ -16,7 +36,7 @@ ServiceStatus serviceStatusFromString(String value) {
 class Service {
   final String name;
   final ServiceStatus status;
-  final int responseTime;  
+  final int responseTime;
   final DateTime lastChecked;
   final String url;
 
@@ -31,10 +51,13 @@ class Service {
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
       name: json['name'] as String,
-      status: serviceStatusFromString(json['status'] as String? ?? 'unknown'),
+      status: serviceStatusFromString(
+        json['status'] as String? ?? 'unknown',
+      ),
       responseTime: json['responseTime'] as int? ?? 0,
-      lastChecked: DateTime.tryParse(json['lastChecked'] as String? ?? '') ??
-          DateTime.now(),
+      lastChecked:
+          DateTime.tryParse(json['lastChecked'] as String? ?? '') ??
+              DateTime.now(),
       url: json['url'] as String? ?? '',
     );
   }
