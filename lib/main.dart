@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'core/storage/hive_config.dart';
 import 'providers/service_provider.dart';
 import 'repositories/service_repository.dart';
 import 'services/service_api.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await HiveConfig.init();
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
