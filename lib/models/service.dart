@@ -33,11 +33,21 @@ ServiceStatus serviceStatusFromString(String value) {
   }
 }
 
-class Service {
+@HiveType(typeId: 2)
+class Service extends HiveObject {
+  @HiveField(0)
   final String name;
+
+  @HiveField(1)
   final ServiceStatus status;
+
+  @HiveField(2)
   final int responseTime;
+
+  @HiveField(3)
   final DateTime lastChecked;
+
+  @HiveField(4)
   final String url;
 
   Service({
