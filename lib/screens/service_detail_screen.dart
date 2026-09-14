@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import '../models/history_entry.dart';
 import '../models/service.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   final Service service;
+  final List<HistoryEntry> history;
 
   const ServiceDetailScreen({
     super.key,
     required this.service,
+    this.history = const [],
   });
 
   String _statusLabel(ServiceStatus status) {
@@ -151,6 +154,7 @@ class ServiceDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
+                // Informations du service
                 Text(
                   'Service information',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -160,7 +164,6 @@ class ServiceDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // Informations
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth >= 600;
@@ -216,6 +219,53 @@ class ServiceDetailScreen extends StatelessWidget {
                     );
                   },
                 ),
+
+                const SizedBox(height: 28),
+
+                // Historique
+                Text(
+                  'History',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+
+                const SizedBox(height: 12),
+
+                if (history.isEmpty)
+                  Card(
+                    elevation: 0,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Icon(Icons.history_rounded),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'No history available yet.',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  ...history.map(
+                    (entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _HistoryCard(
+                        entry: entry,
+                        formatDate: _formatDate,
+                        statusLabel: _statusLabel,
+                        statusColor: _statusColor,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -281,6 +331,71 @@ class _InfoCard extends StatelessWidget {
                         ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  final HistoryEntry entry;
+  final String Function(DateTime) formatDate;
+  final String Function(ServiceStatus) statusLabel;
+  final Color Function(ServiceStatus) statusColor;
+
+  const _HistoryCard({
+    required this.entry,
+    required this.formatDate,
+    required this.statusLabel,
+    required this.statusColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = statusColor(entry.status);
+
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(
+              Icons.circle,
+              size: 10,
+              color: color,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    statusLabel(entry.status),
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatDate(entry.checkedAt),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '${entry.responseTime} ms',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
