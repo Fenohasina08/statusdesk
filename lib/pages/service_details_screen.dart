@@ -66,7 +66,7 @@ class _MetricsCard extends StatelessWidget {
         _MetricRow(icon: Icons.calendar_today_outlined, label: 'Dernière vérification', value: _formatDate(service.lastChecked)),
         const Divider(height: 1),
         _MetricRow(icon: Icons.link, label: 'Endpoint', value: service.url, multiline: true),
-      ]));
+      ])));
 
   String _formatDate(DateTime value) => '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year} - ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 }
@@ -87,7 +87,7 @@ class _DescriptionCard extends StatelessWidget {
   const _DescriptionCard({required this.service});
 
   @override
-  Widget build(BuildContext context) => Card(elevation: 1, color: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('Description', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 10), Text(_description(service), style: const TextStyle(height: 1.45, color: Color(0xff5f6368)))]));
+  Widget build(BuildContext context) => Card(elevation: 1, color: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('Description', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 10), Text(_description(service), style: const TextStyle(height: 1.45, color: Color(0xff5f6368)))])));
 
   String _description(Service service) {
     switch (service.name) {
