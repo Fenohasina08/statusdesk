@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/service.dart';
+import '../providers/service_provider.dart';
 
 class Services extends StatefulWidget {
   const Services({super.key});
@@ -8,113 +12,64 @@ class Services extends StatefulWidget {
 }
 
 class _ServicesState extends State<Services> {
+  String _query = '';
+  ServiceStatus? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ServiceProvider>();
+      if (provider.services.isEmpty && !provider.isLoading) provider.fetchServices();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ServiceProvider>();
+    final services = provider.services.where((service) {
+      final matchesQuery = service.name.toLowerCase().contains(_query.toLowerCase());
+      return matchesQuery && (_status == null || service.status == _status);
+    }).toList();
+
     return Scaffold(
-      body: Container(
-        padding: EdgeInsets.fromLTRB(10, 50, 10, 10),
-        child: SingleChildScrollView(
-          child: Container(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Services", style: TextStyle(fontSize: 30)),
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.refresh, color: Colors.black, size: 30),
-                    ),
-                  ],
-                ),
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: "Rechercher",
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    spacing: 10,
-                    children: [
-                      TextButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {}, child: Text("Tous")),
-                      TextButton(
-                        onPressed: () {}, child: Text("Operationnel")),
-                      TextButton(onPressed: () {}, child: Text("Degradé")),
-                      TextButton(onPressed: () {}, child: Text("Indisponible")),
-                      TextButton(onPressed: () {}, child: Text("Maintenance")),
-                    ],
-                  ),
-                ),
-                Divider(
-                  color: Colors.black,
-                  thickness: 1,
-                ),
-                Container(
-            width: MediaQuery.of(context).size.width,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle,color: Colors.green,size: 40,),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Database",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-                    Text("Opérationnel depuis 45 minutes",style: TextStyle(fontSize: 16,fontWeight: FontWeight.normal),),
-                  ],
-                ),
-                Spacer(),
-                IconButton(onPressed: (){}, icon: Icon(Icons.arrow_forward_ios,color: Colors.black,size: 20,)),
-              ],
-            ),
-           ),
-           SizedBox(height:5,),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle,color: Colors.green,size: 40,),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Database",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-                    Text("Opérationnel depuis 45 minutes",style: TextStyle(fontSize: 16,fontWeight: FontWeight.normal),),
-                  ],
-                ),
-                Spacer(),
-                IconButton(onPressed: (){}, icon: Icon(Icons.arrow_forward_ios,color: Colors.black,size: 20,)),
-              ],
-            ),
-           ),
-          
-              ],
-            ),
-          ),
-        ),
+      body: RefreshIndicator(
+        onRefresh: () => context.read<ServiceProvider>().fetchServices(),
+        child: ListView(padding: const EdgeInsets.fromLTRB(10, 50, 10, 20), children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            const Text('Services', style: TextStyle(fontSize: 30)),
+            IconButton(onPressed: () => context.read<ServiceProvider>().fetchServices(), icon: const Icon(Icons.refresh, size: 30)),
+          ]),
+          TextField(onChanged: (value) => setState(() => _query = value), decoration: const InputDecoration(hintText: 'Rechercher', prefixIcon: Icon(Icons.search), border: OutlineInputBorder())),
+          const SizedBox(height: 10),
+          Wrap(spacing: 6, children: [
+            _filter('Tous', null), _filter('Opérationnel', ServiceStatus.operational), _filter('Dégradé', ServiceStatus.degraded), _filter('Indisponible', ServiceStatus.down),
+          ]),
+          const Divider(),
+          if (provider.isLoading && provider.services.isEmpty)
+            const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+          else if (provider.error != null && provider.services.isEmpty)
+            Center(child: Column(children: [Text(provider.error!, textAlign: TextAlign.center), ElevatedButton(onPressed: () => context.read<ServiceProvider>().fetchServices(), child: const Text('Réessayer'))]))
+          else if (services.isEmpty)
+            const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('Aucun service trouvé.')))
+          else
+            ...services.map((service) => _ServiceRow(service: service)),
+        ]),
       ),
     );
+  }
+
+  Widget _filter(String label, ServiceStatus? status) => ChoiceChip(label: Text(label), selected: _status == status, onSelected: (_) => setState(() => _status = status));
+}
+
+class _ServiceRow extends StatelessWidget {
+  final Service service;
+  const _ServiceRow({required this.service});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = service.status == ServiceStatus.operational ? Colors.green : service.status == ServiceStatus.degraded ? Colors.orange : Colors.red;
+    final label = service.status == ServiceStatus.operational ? 'Opérationnel' : service.status == ServiceStatus.degraded ? 'Dégradé' : 'Indisponible';
+    return Card(child: ListTile(leading: Icon(Icons.circle, color: color), title: Text(service.name), subtitle: Text('$label • ${service.responseTime} ms'), trailing: Text(service.url, overflow: TextOverflow.ellipsis)));
   }
 }
