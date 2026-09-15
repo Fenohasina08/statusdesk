@@ -4,8 +4,8 @@ import '../models/service.dart';
 import '../providers/service_provider.dart';
 import 'service_details_screen.dart';
 
-class Aceuil extends StatefulWidget { const Aceuil({super.key}); @override State<Aceuil> createState() => _AceuilState(); }
-class _AceuilState extends State<Aceuil> {
+class Accueil extends StatefulWidget { const Accueil({super.key}); @override State<Accueil> createState() => _AccueilState(); }
+class _AccueilState extends State<Accueil> {
   String _query = ''; bool _showIssuesOnly = false;
   @override void initState() { super.initState(); WidgetsBinding.instance.addPostFrameCallback((_) { final provider = context.read<ServiceProvider>(); if (provider.services.isEmpty && !provider.isLoading) provider.fetchServices(); }); }
   @override Widget build(BuildContext context) {
