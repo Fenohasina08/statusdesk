@@ -10,7 +10,6 @@ import 'services/service_api.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveConfig.init();
-  await CacheService.init();
   runApp(ChangeNotifierProvider(create: (_) => ServiceProvider(repository: ServiceRepository(api: ServiceApi()))..initialize()..startPolling(), child: const MyApp()));
 }
 class MyApp extends StatelessWidget { const MyApp({super.key}); @override Widget build(BuildContext context) => MaterialApp(title: 'StatusDesk', debugShowCheckedModeBanner: false, theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true), home: const DashboardScreen()); }
