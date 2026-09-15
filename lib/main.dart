@@ -5,18 +5,20 @@ import 'core/storage/hive_config.dart';
 import 'pages/dashboard_screen.dart';
 import 'providers/service_provider.dart';
 import 'repositories/service_repository.dart';
+import 'services/cache_service.dart';
 import 'services/service_api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveConfig.init();
+  await CacheService.init();
 
   runApp(
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
         repository: ServiceRepository(api: ServiceApi()),
       )
-        ..fetchServices()
+        ..initialize()
         ..startPolling(),
       child: const MyApp(),
     ),
