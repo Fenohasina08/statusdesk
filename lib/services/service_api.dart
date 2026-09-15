@@ -22,7 +22,7 @@ class ServiceApi {
     _MonitoredEndpoint('Storage', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
     _MonitoredEndpoint('API Gateway', 'https://www.cloudflare.com'),
     _MonitoredEndpoint('Messaging', 'https://api.telegram.org'),
-    _MonitoredEndpoint('Cache', 'https://one.one.one.one'),
+    _MonitoredEndpoint('Cache', 'https://httpbin.org/status/200'),
   ];
 
   Future<List<Service>> fetchServices() async => Future.wait(monitoredEndpoints.map(_probe));
@@ -30,10 +30,7 @@ class ServiceApi {
   Future<Service> _probe(_MonitoredEndpoint endpoint) async {
     final stopwatch = Stopwatch()..start();
     try {
-      final response = await _client.get(Uri.parse(endpoint.url), headers: const {
-        'Accept': '*/*',
-        'User-Agent': 'StatusDesk-monitor/1.0',
-      }).timeout(timeout);
+      final response = await _client.get(Uri.parse(endpoint.url), headers: const {'Accept': '*/*', 'User-Agent': 'StatusDesk-monitor/1.0'}).timeout(timeout);
       stopwatch.stop();
       final latency = stopwatch.elapsedMilliseconds;
       return Service(name: endpoint.name, status: _statusFor(response.statusCode, latency), responseTime: latency, lastChecked: DateTime.now(), url: endpoint.url);
