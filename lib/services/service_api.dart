@@ -17,11 +17,8 @@ class ServiceApi {
   static const monitoredEndpoints = <_MonitoredEndpoint>[
     _MonitoredEndpoint('Authentication', 'https://api.github.com/users/octocat'),
     _MonitoredEndpoint('Database', 'https://jsonplaceholder.typicode.com/posts/1'),
-    _MonitoredEndpoint('Notification', 'https://postman-echo.com/delay/1'),
-    _MonitoredEndpoint('Payment', 'https://httpbin.org/status/503'),
-    _MonitoredEndpoint('Storage', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
     _MonitoredEndpoint('API Gateway', 'https://www.cloudflare.com'),
-    _MonitoredEndpoint('Messaging', 'https://api.telegram.org'),
+    _MonitoredEndpoint('Storage', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
     _MonitoredEndpoint('Cache', 'https://httpbin.org/status/200'),
   ];
 
