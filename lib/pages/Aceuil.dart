@@ -38,7 +38,9 @@ class _AceuilState extends State<Aceuil> {
           const SizedBox(height: 20),
           Card(child: Padding(padding: const EdgeInsets.all(14), child: Row(children: [Icon(Icons.circle, color: overallColor, size: 32), const SizedBox(width: 10), Expanded(child: Text(overall, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)))]))),
           const SizedBox(height: 12),
-          Wrap(spacing: 10, runSpacing: 10, children: [_CounterCard('Opérationnel', operational, Colors.green), _CounterCard('Dégradé', degraded, Colors.orange), _CounterCard('Indisponible', down, Colors.red), _CounterCard('Total', services.length, Colors.blue)]),
+          Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 10, runSpacing: 10, children: [_CounterCard('Opérationnel', operational, Colors.green), _CounterCard('Dégradé', degraded, Colors.orange), _CounterCard('Indisponible', down, Colors.red), _CounterCard('Total', services.length, Colors.blue)]),
           const SizedBox(height: 24),
           const Text('Services surveillés', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
