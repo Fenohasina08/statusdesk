@@ -179,18 +179,49 @@ class _AceuilState extends State<Aceuil> {
             ),
            ),
            Container(
-            padding: EdgeInsets.all(10),
-            child: Column(
+            width: MediaQuery.of(context).size.width,
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
               children: [
-                Row(
+                Icon(Icons.check_circle,color: Colors.green,size: 40,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check_circle,color: Colors.green,size: 40,),
-                    Text("Historique des incidents",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+                    Text("Authentification",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+                    Text("Opérationnel depuis 45 minutes",style: TextStyle(fontSize: 16,fontWeight: FontWeight.normal),),
                   ],
                 ),
-                SizedBox(height: 10),
-                Text("Historique des incidents",style: TextStyle(fontSize: 16,fontWeight: FontWeight.normal),),
-                
+                Spacer(),
+                IconButton(onPressed: (){}, icon: Icon(Icons.arrow_forward_ios,color: Colors.black,size: 20,)),
+              ],
+            ),
+           ),
+           SizedBox(height: 20),
+           Container(
+            width: MediaQuery.of(context).size.width,
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle,color: Colors.green,size: 40,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Database",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+                    Text("Opérationnel depuis 45 minutes",style: TextStyle(fontSize: 16,fontWeight: FontWeight.normal),),
+                  ],
+                ),
+                Spacer(),
+                IconButton(onPressed: (){}, icon: Icon(Icons.arrow_forward_ios,color: Colors.black,size: 20,)),
               ],
             ),
            ),
