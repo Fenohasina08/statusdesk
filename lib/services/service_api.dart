@@ -5,21 +5,21 @@ import 'package:http/http.dart' as http;
 
 import '../models/service.dart';
 
-/// Client de monitoring live. Chaque service est testé indépendamment.
+/// Client de monitoring live. Chaque endpoint est testé indépendamment.
 class ServiceApi {
   final Duration timeout;
   final http.Client _client;
 
   ServiceApi({Duration? timeout, http.Client? client})
-      : timeout = timeout ?? const Duration(seconds: 5),
+      : timeout = timeout ?? const Duration(seconds: 30),
         _client = client ?? http.Client();
 
   static const monitoredEndpoints = <_MonitoredEndpoint>[
-    _MonitoredEndpoint('Authentication', 'https://api.github.com/users/octocat'),
-    _MonitoredEndpoint('Database', 'https://jsonplaceholder.typicode.com/posts/1'),
-    _MonitoredEndpoint('API Gateway', 'https://www.cloudflare.com'),
-    _MonitoredEndpoint('Storage', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
-    _MonitoredEndpoint('Cache', 'https://httpbin.org/status/200'),
+    _MonitoredEndpoint('GitHub API', 'https://api.github.com'),
+    _MonitoredEndpoint('FreeOpenAPI', 'https://freeopenapi.dev'),
+    _MonitoredEndpoint('Cloudflare', 'https://www.cloudflare.com'),
+    _MonitoredEndpoint('Test HTTP 200', 'https://httpbin.org/status/200'),
+    _MonitoredEndpoint('Test indisponible', 'https://httpbin.org/status/503'),
   ];
 
   Future<List<Service>> fetchServices() async => Future.wait(monitoredEndpoints.map(_probe));
