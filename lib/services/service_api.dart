@@ -19,7 +19,7 @@ class ServiceApi {
     _MonitoredEndpoint('FreeOpenAPI', 'https://freeopenapi.dev'),
     _MonitoredEndpoint('Cloudflare', 'https://www.cloudflare.com'),
     _MonitoredEndpoint('Test HTTP 200', 'https://httpbin.org/status/200'),
-    _MonitoredEndpoint('Test indisponible', 'https://httpbin.org/status/503'),
+     _MonitoredEndpoint('Test indisponible', 'https://httpbin.org/status/503'),
   ];
 
   Future<List<Service>> fetchServices() async {
