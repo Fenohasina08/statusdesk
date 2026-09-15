@@ -46,7 +46,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         _section('Informations techniques', Column(children: [_infoRow('Réponse', httpCode), _infoRow('Disponibilité estimée', service.status == ServiceStatus.down ? 'Indisponible' : '99,9%'), _infoRow('Dernière vérification', _formatDate(service.lastChecked))])),
         _section('Vérifications récentes', Column(children: List.generate(5, (index) => ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.check_circle, color: color, size: 20), title: Text('${service.responseTime + index * 7} ms'), subtitle: Text(index == 0 ? 'Dernier contrôle' : '${index * 2} min auparavant'))))),
         const SizedBox(height: 12),
-        SizedBox(height: 50, child: ElevatedButton.icon(onPressed: _testing ? null : _testNow, icon: _testing ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.bolt), label: Text(_testing ? 'Test en cours...' : 'Tester maintenant'))),
+        SizedBox(height: 50, child: ElevatedButton.icon(onPressed: _testing ? null : _testNow, icon: _testing ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.restart_alt_rounded), label: Text(_testing ? 'Test en cours...' : 'Tester maintenant'))),
       ]),
     );
   }
