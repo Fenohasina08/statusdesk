@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/service.dart';
 import '../providers/service_provider.dart';
 import 'service_details_screen.dart';
@@ -23,25 +24,15 @@ class _ServicesState extends State<Services> {
     });
   }
 
-  List<Service> _servicesForDisplay(List<Service> live) {
-    const names = ['Authentication', 'Database', 'Notification', 'Payment', 'Storage', 'API Gateway', 'Messaging', 'Cache'];
-    return List.generate(names.length, (index) {
-      if (index < live.length) {
-        final source = live[index];
-        return Service(name: names[index], status: source.status, responseTime: source.responseTime, lastChecked: source.lastChecked, url: source.url);
-      }
-      final status = index == 6 ? ServiceStatus.degraded : ServiceStatus.operational;
-      return Service(name: names[index], status: status, responseTime: status == ServiceStatus.degraded ? 920 : 0, lastChecked: DateTime.now(), url: 'Endpoint non configuré');
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceProvider>();
-    final allServices = _servicesForDisplay(provider.services);
-    final services = allServices.where((service) {
-      return service.name.toLowerCase().contains(_query.toLowerCase()) && (_status == null || service.status == _status);
+    final services = provider.services.where((service) {
+      final query = _query.toLowerCase();
+      final matchesSearch = service.name.toLowerCase().contains(query) || service.url.toLowerCase().contains(query);
+      return matchesSearch && (_status == null || service.status == _status);
     }).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xfff8f9fa),
       body: RefreshIndicator(
@@ -57,12 +48,10 @@ class _ServicesState extends State<Services> {
             const SizedBox(height: 16),
             TextField(
               onChanged: (value) => setState(() => _query = value),
-              decoration: InputDecoration(hintText: 'Rechercher un service...', prefixIcon: const Icon(Icons.search), suffixIcon: IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list)), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: BorderSide.none)),
+              decoration: InputDecoration(hintText: 'Rechercher un service...', prefixIcon: const Icon(Icons.search), suffixIcon: const Icon(Icons.filter_list), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: BorderSide.none)),
             ),
             const SizedBox(height: 14),
-            SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
-              _filter('Tous', null), _filter('Opérationnels', ServiceStatus.operational), _filter('Dégradés', ServiceStatus.degraded), _filter('Indisponibles', ServiceStatus.down),
-            ])),
+            SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [_filter('Tous', null), _filter('Opérationnels', ServiceStatus.operational), _filter('Dégradés', ServiceStatus.degraded), _filter('Indisponibles', ServiceStatus.down)])),
             const SizedBox(height: 14),
             if (provider.isLoading && provider.services.isEmpty)
               const Center(child: Padding(padding: EdgeInsets.all(36), child: CircularProgressIndicator()))
@@ -92,52 +81,7 @@ class _ServiceRow extends StatelessWidget {
     final color = service.status == ServiceStatus.operational ? const Color(0xff28a745) : service.status == ServiceStatus.degraded ? const Color(0xffff9800) : const Color(0xffdc3545);
     final label = service.status == ServiceStatus.operational ? 'Opérationnel' : service.status == ServiceStatus.degraded ? 'Dégradé' : 'Indisponible';
     final icon = service.status == ServiceStatus.operational ? Icons.check : service.status == ServiceStatus.degraded ? Icons.warning_rounded : Icons.close;
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ServiceDetailScreen(service: service),
-          ),
-        ),
-        leading: CircleAvatar(
-          backgroundColor: color,
-          child: Icon(icon, color: Colors.white),
-        ),
-        title: Text(
-          service.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            label,
-            style: TextStyle(color: color, fontWeight: FontWeight.w600),
-          ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              service.status == ServiceStatus.down
-                  ? '—'
-                  : '${service.responseTime} ms',
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-          ],
-        ),
-      ),
-    );
+    return Card(elevation: 0, color: Colors.white, margin: const EdgeInsets.only(bottom: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ServiceDetailScreen(service: service))), leading: CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)), title: Text(service.name, style: const TextStyle(fontWeight: FontWeight.bold)), subtitle: Padding(padding: const EdgeInsets.only(top: 4), child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600))), trailing: Row(mainAxisSize: MainAxisSize.min, children: [Text(service.status == ServiceStatus.down ? '—' : '${service.responseTime} ms', style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.chevron_right, color: Colors.grey)]));
   }
 }
 
