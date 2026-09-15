@@ -24,6 +24,20 @@ class ServiceProvider extends ChangeNotifier {
   String? get error => _error;
   DateTime? get lastSync => _lastSync;
 
+  Future<void> initialize() async {
+    try {
+      final cached = await repository.cache.getCachedServices();
+      if (cached.isNotEmpty) {
+        _services = cached;
+        _lastSync = cached.map((service) => service.lastChecked).reduce((a, b) => a.isAfter(b) ? a : b);
+        notifyListeners();
+      }
+    } catch (_) {
+      // Live polling remains available if Hive cannot be read.
+    }
+    await fetchServices();
+  }
+
   void startPolling() {
     if (_pollTimer != null) return;
     _pollTimer = Timer.periodic(pollingInterval, (_) => fetchServices());
@@ -35,15 +49,13 @@ class ServiceProvider extends ChangeNotifier {
     _isPolling = _pollTimer != null;
     _error = null;
     notifyListeners();
-
     try {
-      final updatedServices = await repository.getServices();
-      _services = updatedServices;
+      _services = await repository.getServices();
       _lastSync = DateTime.now();
     } on ApiException catch (e) {
       _error = e.message;
     } catch (_) {
-      _error = 'An unexpected error occurred.';
+      _error = 'Mode hors connexion : dernières données conservées.';
     } finally {
       _isLoading = false;
       _isPolling = false;
