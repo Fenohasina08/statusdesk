@@ -39,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
+            icon: Icon(Icons.list_alt_sharp),
             label: 'Services',
           ),
         ],
