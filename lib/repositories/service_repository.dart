@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'dart:io';
 
 import '../models/service.dart';
 import '../services/cache_service.dart';
@@ -18,17 +18,11 @@ class ServiceRepository {
       final liveServices = await api.fetchServices();
       await cache.saveServices(liveServices);
       return liveServices;
-    } on SocketException {
-      return _cachedOrRethrow();
-    } catch (_) {
+    } catch (error, stackTrace) {
       // Une erreur réseau ou de transport ne doit pas effacer la dernière vue valide.
-      return _cachedOrRethrow();
+      final cached = await cache.getCachedServices();
+      if (cached.isNotEmpty) return cached;
+      Error.throwWithStackTrace(error, stackTrace);
     }
-  }
-
-  Future<List<Service>> _cachedOrRethrow() async {
-    final cached = await cache.getCachedServices();
-    if (cached.isNotEmpty) return cached;
-    rethrow;
   }
 }
