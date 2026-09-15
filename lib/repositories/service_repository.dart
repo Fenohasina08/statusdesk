@@ -8,12 +8,12 @@ class ServiceRepository {
   final CacheService cache;
   ServiceRepository({required this.api, CacheService? cache}) : cache = cache ?? CacheService();
 
-  static const _expectedServiceNames = {'Authentication', 'Database', 'Notification', 'Payment', 'Storage', 'API Gateway', 'Messaging', 'Cache'};
+  static const _expectedServiceNames = {'Authentication', 'Database', 'API Gateway', 'Storage', 'Cache'};
 
   Future<List<Service>> getServices() async {
     try {
       final liveServices = await api.fetchServices();
-      if (!_hasCompleteServiceSet(liveServices)) throw StateError('Le monitoring live doit retourner les 8 services configurés.');
+      if (!_hasCompleteServiceSet(liveServices)) throw StateError('Le monitoring live doit retourner les 5 services configurés.');
       try {
         await cache.saveServices(liveServices);
       } catch (_) {
