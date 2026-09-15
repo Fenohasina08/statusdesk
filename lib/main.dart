@@ -15,7 +15,7 @@ Future<void> main() async {
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
         repository: ServiceRepository(api: ServiceApi()),
-      ),
+      )..fetchServices(),
       child: const MyApp(),
     ),
   );
