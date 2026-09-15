@@ -1,6 +1,7 @@
 import '../models/service.dart';
 import '../services/cache_service.dart';
 import '../services/service_api.dart';
+import '../models/history_entry.dart';
 
 class ServiceRepository {
   final ServiceApi api;
@@ -12,23 +13,30 @@ class ServiceRepository {
   });
 
   Future<List<Service>> getServices() async {
-    try {
-      final services = await api.fetchServices();
+  try {
+    final services = await api.fetchServices();
 
-      // Si l'API fonctionne, on met à jour le cache.
-      await cache.saveServices(services);
+    await cache.saveServices(services);
 
-      return services;
-    } catch (_) {
-      // Si l'API échoue, on utilise les données locales.
-      final cachedServices = await cache.getCachedServices();
+    for (final service in services) {
+      final entry = HistoryEntry(
+        checkedAt: service.lastChecked,
+        responseTime: service.responseTime,
+        status: service.status,
+      );
 
-      if (cachedServices.isNotEmpty) {
-        return cachedServices;
-      }
-
-      // Aucun cache disponible : on laisse l'erreur remonter.
-      rethrow;
+      await cache.saveHistory(service.name, entry);
     }
+
+    return services;
+  } catch (_) {
+    final cachedServices = await cache.getCachedServices();
+
+    if (cachedServices.isNotEmpty) {
+      return cachedServices;
+    }
+
+    rethrow;
   }
+}
 }

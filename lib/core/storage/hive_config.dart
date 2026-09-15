@@ -5,10 +5,8 @@ import '../../models/service.dart';
 
 class HiveConfig {
   static Future<void> init() async {
-    // Initialise Hive pour Flutter.
     await Hive.initFlutter();
 
-    // Enregistre les adapters générés.
     if (!Hive.isAdapterRegistered(0)) {
       Hive.registerAdapter(ServiceStatusAdapter());
     }
@@ -17,7 +15,10 @@ class HiveConfig {
       Hive.registerAdapter(HistoryEntryAdapter());
     }
 
-    // Ouvre la box dédiée à l'historique.
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(ServiceAdapter());
+    }
+
     await Hive.openBox<HistoryEntry>('history');
   }
 }

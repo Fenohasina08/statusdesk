@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
-import '../lib/models/service.dart';
-import '../lib/services/cache_service.dart';
+import 'package:statusdesk/models/service.dart';
+import 'package:statusdesk/services/cache_service.dart';
 
 void main() {
   late Directory testDirectory;
 
   setUpAll(() async {
-    testDirectory = await Directory.systemTemp.createTemp('statusdesk_test_');
+    testDirectory = await Directory.systemTemp.createTemp(
+      'statusdesk_test_',
+    );
 
     Hive.init(testDirectory.path);
 

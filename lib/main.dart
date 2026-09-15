@@ -5,6 +5,7 @@ import 'core/storage/hive_config.dart';
 import 'providers/service_provider.dart';
 import 'repositories/service_repository.dart';
 import 'services/service_api.dart';
+import 'services/cache_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,10 @@ Future<void> main() async {
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
         repository: ServiceRepository(
-          api: ServiceApi(baseUrl: 'https://ton-api.example.com'),
+          api: ServiceApi(
+            baseUrl: 'https://ton-api.example.com',
+          ),
+          cache: CacheService(),
         ),
       ),
       child: const MyApp(),
