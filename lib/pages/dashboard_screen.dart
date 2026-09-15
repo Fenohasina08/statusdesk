@@ -43,7 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             DashboardSearchBar(controller: _searchController, onChanged: (value) => setState(() => _query = value)),
             const SizedBox(height: 12),
             StatusFilterChips(selectedStatus: _selectedStatus, onSelected: (value) => setState(() => _selectedStatus = value)),
-          ])),
+          ]))),
           if (provider.isLoading && provider.services.isEmpty)
             const SliverFillRemaining(child: DashboardLoadingState())
           else if (provider.error != null && provider.services.isEmpty)

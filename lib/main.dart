@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:statusdesk/pages/dashboard_screen.dart';
 
 import 'core/storage/hive_config.dart';
 import 'providers/service_provider.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.indigo,
         useMaterial3: true,
       ),
-      home: const HomePlaceholder(),
+      home: const DashboardScreen(),
     );
   }
 }
