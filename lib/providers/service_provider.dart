@@ -5,6 +5,7 @@ import '../utils/api_exceptions.dart';
 
 class ServiceProvider extends ChangeNotifier {
   final ServiceRepository repository;
+
   ServiceProvider({required this.repository});
 
   List<Service> _services = [];
@@ -33,5 +34,9 @@ class ServiceProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> refreshServices() async {
+    await fetchServices();
   }
 }
