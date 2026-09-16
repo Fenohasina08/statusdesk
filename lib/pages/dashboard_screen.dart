@@ -1,6 +1,7 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'accueil.dart';
+import 'parametres.dart';
 import 'services.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),
             activeIcon: Icon(Icons.settings),
-            label: 'Paramètres', // Affichage avec accent dans la barre de navigation
+            label: 'Paramètres',
           ),
         ],
       ),
