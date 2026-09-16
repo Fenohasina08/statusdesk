@@ -7,25 +7,24 @@ import '../services/cache_service.dart';
 import '../l10n/app_localizations.dart';
 
 class Parametres extends StatefulWidget {
-  const Parametres({super.key});
+  final VoidCallback? onBackPressed; // Callback reçu du Dashboard
+
+  const Parametres({super.key, this.onBackPressed});
 
   @override
   State<Parametres> createState() => _ParametresState();
 }
 
 class _ParametresState extends State<Parametres> {
-  // Indique si le cache vient d'être vidé manuellement (force l'affichage à 0 Mo)
   bool _isCacheCleared = false;
 
-  // Fonction pour calculer dynamiquement la taille du cache selon les données chargées
   String _getDynamicCacheSize(ServiceProvider provider) {
     if (_isCacheCleared || provider.services.isEmpty) {
       return '0 Mo';
     }
 
-    // Estimation proportionnelle basée sur le nombre de services et de données en cache
     int serviceCount = provider.services.length;
-    double sizeInKb = serviceCount * 45.0; // ~45 Ko par service avec son historique
+    double sizeInKb = serviceCount * 45.0;
 
     if (sizeInKb < 1024) {
       return '${sizeInKb.toStringAsFixed(1)} Ko';
@@ -59,7 +58,8 @@ class _ParametresState extends State<Parametres> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () => Navigator.of(context).pop(),
+          // Utilise le callback fourni pour basculer vers l'onglet précédent
+          onPressed: widget.onBackPressed,
         ),
       ),
       body: ListView(
@@ -133,14 +133,13 @@ class _ParametresState extends State<Parametres> {
             _buildListTile(
               icon: Icons.folder_delete_outlined,
               title: l10n.clearCache,
-              trailingText: _getDynamicCacheSize(serviceProvider), // Calcul dynamique
+              trailingText: _getDynamicCacheSize(serviceProvider),
               textColor: textColor,
               onTap: () async {
                 final cacheService = CacheService();
                 await cacheService.clearServices();
                 await cacheService.clearHistory();
 
-                // Marque le cache comme vidé pour afficher 0 Mo immédiatement
                 setState(() {
                   _isCacheCleared = true;
                 });
