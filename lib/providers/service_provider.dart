@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:http/http.dart' as http;
 
 import '../models/service.dart';
 import '../repositories/service_repository.dart';
@@ -9,7 +11,9 @@ import '../utils/api_exceptions.dart';
 class ServiceProvider extends ChangeNotifier {
   final ServiceRepository repository;
 
-  ServiceProvider({required this.repository});
+  ServiceProvider({required this.repository}) {
+    _initConnectivity();
+  }
 
   static const maxHistoryEntries = 10;
   Timer? _pollTimer;
@@ -20,10 +24,15 @@ class ServiceProvider extends ChangeNotifier {
   String? _error;
   DateTime? _lastSync;
 
-  // Nouveaux états configurables depuis les paramètres
+  // Paramètres configurables
   bool _autoRefreshEnabled = true;
   int _intervalInMinutes = 5;
-  bool _offlineModeEnabled = true;
+  bool _offlineModeEnabled = false;
+
+  // Détection automatique du réseau
+  bool _isOffline = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  Timer? _connectivityPollTimer;
 
   List<Service> get services => _services;
   bool get isLoading => _isLoading;
@@ -33,9 +42,106 @@ class ServiceProvider extends ChangeNotifier {
   bool get autoRefreshEnabled => _autoRefreshEnabled;
   int get intervalInMinutes => _intervalInMinutes;
   bool get offlineModeEnabled => _offlineModeEnabled;
+  bool get isOffline => _isOffline;
 
   List<Service> historyFor(String url) =>
       List.unmodifiable(_history[url] ?? const <Service>[]);
+
+  // --- Détection réseau ---
+
+  Future<void> _initConnectivity() async {
+    try {
+      final List<ConnectivityResult> connectivityResult =
+          await Connectivity().checkConnectivity();
+      await _updateConnectionStatus(connectivityResult);
+    } catch (e) {
+      if (kDebugMode) {
+        print('[Connectivity] Erreur checkConnectivity initial: $e');
+      }
+    }
+
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> result) {
+      if (kDebugMode) {
+        print('[Connectivity] onConnectivityChanged déclenché: $result');
+      }
+      _updateConnectionStatus(result);
+    });
+
+    // Filet de sécurité : sur desktop natif, l'interface peut rester "up"
+    // (Docker, VPN, bridges) sans accès internet réel, et l'OS ne redéclenche
+    // pas toujours onConnectivityChanged. On revérifie donc l'état complet
+    // périodiquement, en repassant par checkConnectivity() (et non un ping
+    // direct) pour garder un comportement cohérent web/desktop/mobile.
+    _connectivityPollTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) async {
+        final result = await Connectivity().checkConnectivity();
+        if (kDebugMode) {
+          print('[Connectivity] Poll périodique -> $result');
+        }
+        await _updateConnectionStatus(result);
+      },
+    );
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+    final bool interfaceDown =
+        result.isEmpty || result.every((r) => r == ConnectivityResult.none);
+
+    if (kDebugMode) {
+      print('[Connectivity] Interfaces détectées: $result | interfaceDown=$interfaceDown');
+    }
+
+    if (interfaceDown) {
+      _setOffline(true);
+      return;
+    }
+
+    final bool hasRealInternet = await _hasInternetAccess();
+    if (kDebugMode) {
+      print('[Connectivity] hasRealInternet=$hasRealInternet');
+    }
+    _setOffline(!hasRealInternet);
+  }
+
+  /// Vérifie un vrai accès internet (au-delà du simple état d'interface).
+  /// Sur le web, les requêtes cross-origin sont bloquées par CORS pour la
+  /// quasi-totalité des domaines externes : on se fie donc à l'état fourni
+  /// par connectivity_plus (navigator.onLine du navigateur), déjà vérifié
+  /// juste avant cet appel. Sur desktop/mobile, on confirme avec une vraie
+  /// requête HTTP, car l'interface peut être "up" (Docker/VPN/bridge) sans
+  /// accès internet réel.
+  Future<bool> _hasInternetAccess() async {
+    if (kIsWeb) {
+      return true;
+    }
+
+    try {
+      final response = await http
+          .get(Uri.parse('https://www.gstatic.com/generate_204'))
+          .timeout(const Duration(seconds: 5));
+      return response.statusCode == 204 || response.statusCode == 200;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[Connectivity] Requête échouée: $e');
+      }
+      return false;
+    }
+  }
+
+  void _setOffline(bool value) {
+    if (_isOffline != value) {
+      if (kDebugMode) {
+        print('[Connectivity] Changement état -> isOffline: $_isOffline -> $value');
+      }
+      _isOffline = value;
+      notifyListeners();
+    }
+  }
+
+  // --- Initialisation & récupération des services ---
 
   Future<void> initialize() async {
     try {
@@ -54,6 +160,7 @@ class ServiceProvider extends ChangeNotifier {
   }
 
   // --- Gestion du Polling & Paramètres ---
+
   void setAutoRefresh(bool enabled) {
     _autoRefreshEnabled = enabled;
     notifyListeners();
@@ -68,7 +175,7 @@ class ServiceProvider extends ChangeNotifier {
     _intervalInMinutes = minutes;
     notifyListeners();
     if (_autoRefreshEnabled) {
-      startPolling(); // Redémarre le timer avec le nouvel intervalle
+      startPolling();
     }
   }
 
@@ -131,6 +238,8 @@ class ServiceProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _connectivitySubscription?.cancel();
+    _connectivityPollTimer?.cancel();
     stopPolling();
     super.dispose();
   }
