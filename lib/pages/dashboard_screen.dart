@@ -14,14 +14,21 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    Accueil(),
-    Services(),
-    Parametres(),
+  // Suppression du 'const' ici car les pages utilisent des éléments dynamiques du thème
+  final List<Widget> _pages = [
+    const Accueil(),
+    const Services(),
+    const Parametres(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Couleurs adaptatives pour la barre de navigation
+    final navBgColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
+    final unselectedColor = isDark ? Colors.grey.shade400 : Colors.grey;
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -30,8 +37,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
+        backgroundColor: navBgColor,
         selectedItemColor: const Color(0xff2196f3),
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: unselectedColor,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

@@ -35,8 +35,13 @@ class _AccueilState extends State<Accueil> {
     final statusColor = down > 0 ? const Color(0xffdc3545) : degraded > 0 ? const Color(0xffff9800) : const Color(0xff28a745);
     final filtered = services.where((s) => s.name.toLowerCase().contains(_query.toLowerCase()) && (!_showIssuesOnly || s.status != ServiceStatus.operational)).toList();
     
+    // Thème et couleurs dynamiques
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xff121212) : const Color(0xfff7f8fa);
+    final textColor = isDark ? Colors.white : const Color(0xff1e293b);
+    
     return Scaffold(
-      backgroundColor: const Color(0xfff7f8fa), 
+      backgroundColor: bgColor, 
       body: RefreshIndicator(
         onRefresh: () => context.read<ServiceProvider>().fetchServices(), 
         child: ListView(
@@ -46,10 +51,10 @@ class _AccueilState extends State<Accueil> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween, 
               children: [
-                const Text('StatusDesk', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)), 
+                Text('StatusDesk', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textColor)), 
                 IconButton(
                   onPressed: provider.isLoading ? null : provider.fetchServices, 
-                  icon: provider.isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.refresh),
+                  icon: provider.isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(Icons.refresh, color: textColor),
                 ),
               ],
             ),
@@ -71,16 +76,18 @@ class _AccueilState extends State<Accueil> {
               ],
             ), 
             const SizedBox(height: 28),
-            const Text('Services', style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold)), 
+            Text('Services', style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold, color: textColor)), 
             const SizedBox(height: 10),
             TextField(
               onChanged: (value) => setState(() => _query = value), 
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Rechercher un service...', 
-                prefixIcon: const Icon(Icons.search), 
-                suffixIcon: IconButton(onPressed: () => setState(() => _showIssuesOnly = !_showIssuesOnly), icon: Icon(Icons.tune, color: _showIssuesOnly ? statusColor : Colors.grey)), 
+                hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey),
+                prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey.shade400 : Colors.grey), 
+                suffixIcon: IconButton(onPressed: () => setState(() => _showIssuesOnly = !_showIssuesOnly), icon: Icon(Icons.tune, color: _showIssuesOnly ? statusColor : (isDark ? Colors.grey.shade400 : Colors.grey))), 
                 filled: true, 
-                fillColor: Colors.white, 
+                fillColor: isDark ? const Color(0xff1e1e1e) : Colors.white, 
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ), 
@@ -90,7 +97,7 @@ class _AccueilState extends State<Accueil> {
             else if (provider.error != null && services.isEmpty) 
               _ErrorState(message: provider.error!, onRetry: provider.fetchServices) 
             else if (filtered.isEmpty) 
-              const Center(child: Padding(padding: EdgeInsets.all(30), child: Text('Aucun service trouvé.'))) 
+              Center(child: Padding(padding: const EdgeInsets.all(30), child: Text('Aucun service trouvé.', style: TextStyle(color: textColor)))) 
             else 
               ...filtered.map((service) => _ServiceCard(service: service)),
           ],
@@ -112,11 +119,17 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) { 
     final hour = DateTime.now().hour; 
     final greeting = hour >= 18 || hour < 5 ? 'Bonsoir' : 'Bonjour'; 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xff1e293b);
     
     return Card(
       elevation: 0, 
-      color: color.withValues(alpha: 0.12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
+      color: cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: color.withValues(alpha: 0.3), width: 1),
+      ), 
       child: Padding(
         padding: const EdgeInsets.all(18), 
         child: Row(
@@ -128,13 +141,13 @@ class _StatusBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start, 
                 children: [
-                  Text('$greeting !', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold)), 
+                  Text('$greeting !', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: textColor)), 
                   const SizedBox(height: 3), 
-                  const Text("Voici l'état de vos services."), 
+                  Text("Voici l'état de vos services.", style: TextStyle(color: isDark ? Colors.grey.shade300 : Colors.black87)), 
                   const SizedBox(height: 8), 
-                  Text(message, style: const TextStyle(fontWeight: FontWeight.w600)), 
+                  Text(message, style: TextStyle(fontWeight: FontWeight.w600, color: textColor)), 
                   const SizedBox(height: 10), 
-                  Text('Dernière synchro : ${_formatSync(lastSync)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                  Text('Dernière synchro : ${_formatSync(lastSync)}', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade700)),
                 ],
               ),
             ),
@@ -156,23 +169,27 @@ class _MetricCard extends StatelessWidget {
   const _MetricCard({required this.label, required this.count, required this.color, required this.icon}); 
   
   @override 
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8), 
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.1), 
-      borderRadius: BorderRadius.circular(13), 
-      border: Border.all(color: color.withValues(alpha: 0.35)), 
-    ), 
-    child: Column(
-      children: [
-        Icon(icon, color: color, size: 23), 
-        const SizedBox(height: 6), 
-        Text('$count', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: color)), 
-        const SizedBox(height: 2), 
-        FittedBox(child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color))),
-      ],
-    ),
-  ); 
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8), 
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff1e1e1e) : color.withValues(alpha: 0.1), 
+        borderRadius: BorderRadius.circular(13), 
+        border: Border.all(color: color.withValues(alpha: 0.35)), 
+      ), 
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 23), 
+          const SizedBox(height: 6), 
+          Text('$count', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: color)), 
+          const SizedBox(height: 2), 
+          FittedBox(child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color))),
+        ],
+      ),
+    ); 
+  }
 }
 
 class _ServiceCard extends StatelessWidget { 
@@ -184,20 +201,27 @@ class _ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) { 
     final color = service.status == ServiceStatus.operational ? const Color(0xff28a745) : service.status == ServiceStatus.degraded ? const Color(0xffff9800) : const Color(0xffdc3545); 
     final label = service.status == ServiceStatus.operational ? 'Opérationnel' : service.status == ServiceStatus.degraded ? 'Dégradé' : 'Indisponible'; 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xff1e293b);
     
     return Card(
       elevation: 0, 
       margin: const EdgeInsets.only(bottom: 10), 
-      color: Colors.white, 
+      color: cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200, width: 1),
+      ), 
       child: ListTile(
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ServiceDetailScreen(service: service))), 
         leading: CircleAvatar(
           backgroundColor: color.withValues(alpha: 0.14), 
           child: Icon(service.status == ServiceStatus.operational ? Icons.check : service.status == ServiceStatus.degraded ? Icons.warning_rounded : Icons.close, color: color),
         ), 
-        title: Text(service.name, style: const TextStyle(fontWeight: FontWeight.bold)), 
+        title: Text(service.name, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)), 
         subtitle: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)), 
-        trailing: Text('${service.responseTime} ms'),
+        trailing: Text('${service.responseTime} ms', style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade700)),
       ),
     ); 
   } 
@@ -212,7 +236,7 @@ class _ErrorState extends StatelessWidget {
   @override 
   Widget build(BuildContext context) => Column(
     children: [
-      Text(message, textAlign: TextAlign.center), 
+      Text(message, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)), 
       const SizedBox(height: 10), 
       ElevatedButton(onPressed: onRetry, child: const Text('Réessayer')),
     ],
