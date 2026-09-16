@@ -1,0 +1,58 @@
+{
+  "statusDesk": "StatusDesk",
+  "services": "Services",
+  "home": "Home",
+  "settings": "Settings",
+  "goodMorning": "Good morning",
+  "goodEvening": "Good evening",
+  "servicesStateMessage": "Here is the status of your services.",
+  "servicesDownIncident": "Some services are currently down.",
+  "servicesDegradedIncident": "Some services are experiencing slowdowns.",
+  "servicesAllOperational": "Everything is running smoothly! No major incidents reported.",
+  "lastSync": "Last sync: {time}",
+  "@lastSync": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "waiting": "Waiting",
+  "operational": "Operational",
+  "degraded": "Degraded",
+  "unavailable": "Unavailable",
+  "operationalStatus": "Operational",
+  "degradedStatus": "Degraded",
+  "unavailableStatus": "Unavailable",
+  "searchServiceHint": "Search for a service...",
+  "noServicesFound": "No services found.",
+  "retry": "Retry",
+  "french": "French",
+  "english": "English",
+  "settingsTitle": "Settings",
+  "appearanceSection": "Appearance",
+  "theme": "Theme",
+  "language": "Language",
+  "refreshSection": "Refresh",
+  "autoRefresh": "Auto-refresh",
+  "interval": "Interval",
+  "minutes": "{count} minutes",
+  "@minutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cacheSection": "Cache & Offline",
+  "offlineMode": "Offline mode",
+  "clearCache": "Clear cache",
+  "cacheCleared": "Cache cleared successfully",
+  "aboutSection": "About",
+  "appVersion": "App version",
+  "chooseTheme": "Choose theme",
+  "systemTheme": "System",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "chooseLanguage": "Choose language"
+}
