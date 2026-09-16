@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'accueil.dart';
-import 'parametres.dart';
+import 'parameter.dart';
 import 'services.dart';
 
 class DashboardScreen extends StatefulWidget {
