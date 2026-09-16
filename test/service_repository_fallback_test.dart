@@ -46,10 +46,9 @@ void main() {
     // On prépare le cache.
     await cacheService.saveServices([cachedService]);
 
-    // URL volontairement invalide pour provoquer une erreur réseau.
-    final api = ServiceApi(
-      baseUrl: 'http://127.0.0.1:59999',
-    );
+    // ServiceApi utilise les endpoints configurés par l’application.
+    // Le repository bascule vers le cache si le sondage réseau échoue.
+    final api = ServiceApi();
 
     final repository = ServiceRepository(
       api: api,
