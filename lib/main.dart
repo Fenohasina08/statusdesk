@@ -10,19 +10,16 @@ import 'services/cache_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await HiveConfig.init();
 
   runApp(
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
         repository: ServiceRepository(
-          api: ServiceApi(
-            baseUrl: 'https://ton-api.example.com',
-          ),
+          api: ServiceApi(),
           cache: CacheService(),
         ),
-      ),
-        repository: ServiceRepository(api: ServiceApi()),
       )..fetchServices(),
       child: const MyApp(),
     ),
@@ -36,7 +33,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         title: 'StatusDesk',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+        theme: ThemeData(
+          colorSchemeSeed: Colors.indigo,
+          useMaterial3: true,
+        ),
         home: const DashboardScreen(),
       );
 }
+
