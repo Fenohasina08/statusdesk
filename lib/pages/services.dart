@@ -36,8 +36,12 @@ class _ServicesState extends State<Services> {
       return matchesSearch && (_status == null || service.status == _status);
     }).toList();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xff121212) : const Color(0xfff8f9fa);
+    final textColor = isDark ? Colors.white : const Color(0xff1e293b);
+
     return Scaffold(
-      backgroundColor: const Color(0xfff8f9fa),
+      backgroundColor: bgColor,
       body: RefreshIndicator(
         onRefresh: () => context.read<ServiceProvider>().fetchServices(),
         child: ListView(
@@ -47,9 +51,9 @@ class _ServicesState extends State<Services> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Services',
+                Text('Services',
                     style:
-                        TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                        TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textColor)),
                 IconButton(
                   onPressed: provider.isLoading
                       ? null
@@ -60,19 +64,21 @@ class _ServicesState extends State<Services> {
                           height: 22,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.refresh, size: 27),
+                      : Icon(Icons.refresh, size: 27, color: textColor),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             TextField(
               onChanged: (value) => setState(() => _query = value),
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Rechercher un service...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: const Icon(Icons.filter_list),
+                hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey),
+                prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey.shade400 : Colors.grey),
+                suffixIcon: Icon(Icons.filter_list, color: isDark ? Colors.grey.shade400 : Colors.grey),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: isDark ? const Color(0xff1e1e1e) : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(13),
                   borderSide: BorderSide.none,
@@ -83,10 +89,10 @@ class _ServicesState extends State<Services> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: [
-                _filter('Tous', null),
-                _filter('Opérationnels', ServiceStatus.operational),
-                _filter('Dégradés', ServiceStatus.degraded),
-                _filter('Indisponibles', ServiceStatus.down),
+                _filter('Tous', null, isDark),
+                _filter('Opérationnels', ServiceStatus.operational, isDark),
+                _filter('Dégradés', ServiceStatus.degraded, isDark),
+                _filter('Indisponibles', ServiceStatus.down, isDark),
               ]),
             ),
             const SizedBox(height: 14),
@@ -103,10 +109,10 @@ class _ServicesState extends State<Services> {
                 onRetry: () => context.read<ServiceProvider>().fetchServices(),
               )
             else if (services.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(30),
-                  child: Text('Aucun service trouvé.'),
+                  padding: const EdgeInsets.all(30),
+                  child: Text('Aucun service trouvé.', style: TextStyle(color: textColor)),
                 ),
               )
             else
@@ -117,7 +123,7 @@ class _ServicesState extends State<Services> {
     );
   }
 
-  Widget _filter(String label, ServiceStatus? status) {
+  Widget _filter(String label, ServiceStatus? status, bool isDark) {
     final selected = _status == status;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -125,15 +131,15 @@ class _ServicesState extends State<Services> {
         label: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : const Color(0xff343a40),
+            color: selected ? Colors.white : (isDark ? Colors.grey.shade300 : const Color(0xff343a40)),
             fontWeight: FontWeight.w600,
           ),
         ),
         selected: selected,
         selectedColor: const Color(0xff2196f3),
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xff1e1e1e) : Colors.white,
         side: BorderSide(
-          color: selected ? const Color(0xff2196f3) : Colors.grey.shade300,
+          color: selected ? const Color(0xff2196f3) : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
         ),
         onSelected: (_) => setState(() => _status = status),
       ),
@@ -163,11 +169,18 @@ class _ServiceRow extends StatelessWidget {
             ? Icons.warning_rounded
             : Icons.close;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xff1e293b);
+
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: cardColor,
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200, width: 1),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         onTap: () => Navigator.push(
@@ -177,11 +190,11 @@ class _ServiceRow extends StatelessWidget {
           ),
         ),
         leading: CircleAvatar(
-          backgroundColor: color,
-          child: Icon(icon, color: Colors.white),
+          backgroundColor: color.withValues(alpha: 0.2),
+          child: Icon(icon, color: color),
         ),
         title: Text(service.name,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(label,
@@ -195,7 +208,7 @@ class _ServiceRow extends StatelessWidget {
                   ? '—'
                   : '${service.responseTime} ms',
               style: TextStyle(
-                  color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700, fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: Colors.grey),
@@ -214,7 +227,7 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Text(message, textAlign: TextAlign.center),
+          Text(message, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)),
           const SizedBox(height: 10),
           ElevatedButton(onPressed: onRetry, child: const Text('Réessayer')),
         ],

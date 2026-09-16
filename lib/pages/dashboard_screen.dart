@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'accueil.dart';
+import 'parameter.dart';
 import 'services.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -11,39 +12,50 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
+  int _currentIndex = 0;
 
-  final List<Widget> pages = const [
-    Accueil(),
-    Services(),
+  // Suppression du 'const' ici car les pages utilisent des éléments dynamiques du thème
+  final List<Widget> _pages = [
+    const Accueil(),
+    const Services(),
+    const Parametres(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Couleurs adaptatives pour la barre de navigation
+    final navBgColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
+    final unselectedColor = isDark ? Colors.grey.shade400 : Colors.grey;
+
     return Scaffold(
-      body: pages[_selectedIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        backgroundColor: navBgColor,
+        selectedItemColor: const Color(0xff2196f3),
+        unselectedItemColor: unselectedColor,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-        items: const <BottomNavigationBarItem>[
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_sharp),
+            icon: Icon(Icons.list_alt_rounded),
+            activeIcon: Icon(Icons.list),
             label: 'Services',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
+            label: 'Paramètres',
           ),
         ],
       ),
