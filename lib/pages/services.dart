@@ -50,32 +50,6 @@ class _ServicesState extends State<Services> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 46, 16, 24),
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.services,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                IconButton(
-                  onPressed: provider.isLoading
-                      ? null
-                      : () => context.read<ServiceProvider>().fetchServices(),
-                  icon: provider.isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(Icons.refresh, size: 27, color: textColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             TextField(
               onChanged: (value) => setState(() => _query = value),
               style: TextStyle(color: textColor),
