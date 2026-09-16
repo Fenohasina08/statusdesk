@@ -10,7 +10,7 @@ class ServiceProvider extends ChangeNotifier {
   final ServiceRepository repository;
 
   ServiceProvider({required this.repository});
-  static const pollingInterval = Duration(seconds: 15);
+
   static const maxHistoryEntries = 10;
   Timer? _pollTimer;
   List<Service> _services = [];
@@ -20,12 +20,22 @@ class ServiceProvider extends ChangeNotifier {
   String? _error;
   DateTime? _lastSync;
 
+  // Nouveaux états configurables depuis les paramètres
+  bool _autoRefreshEnabled = true;
+  int _intervalInMinutes = 5;
+  bool _offlineModeEnabled = true;
+
   List<Service> get services => _services;
   bool get isLoading => _isLoading;
   bool get isPolling => _isPolling;
   String? get error => _error;
   DateTime? get lastSync => _lastSync;
-  List<Service> historyFor(String url) => List.unmodifiable(_history[url] ?? const <Service>[]);
+  bool get autoRefreshEnabled => _autoRefreshEnabled;
+  int get intervalInMinutes => _intervalInMinutes;
+  bool get offlineModeEnabled => _offlineModeEnabled;
+
+  List<Service> historyFor(String url) =>
+      List.unmodifiable(_history[url] ?? const <Service>[]);
 
   Future<void> initialize() async {
     try {
@@ -33,23 +43,60 @@ class ServiceProvider extends ChangeNotifier {
       if (cached.isNotEmpty) {
         _services = cached;
         _recordHistory(cached);
-        _lastSync = cached.map((service) => service.lastChecked).reduce((a, b) => a.isAfter(b) ? a : b);
+        _lastSync = cached
+            .map((service) => service.lastChecked)
+            .reduce((a, b) => a.isAfter(b) ? a : b);
         notifyListeners();
       }
     } catch (_) {}
     await fetchServices();
+    startPolling();
+  }
+
+  // --- Gestion du Polling & Paramètres ---
+  void setAutoRefresh(bool enabled) {
+    _autoRefreshEnabled = enabled;
+    notifyListeners();
+    if (_autoRefreshEnabled) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  }
+
+  void setInterval(int minutes) {
+    _intervalInMinutes = minutes;
+    notifyListeners();
+    if (_autoRefreshEnabled) {
+      startPolling(); // Redémarre le timer avec le nouvel intervalle
+    }
+  }
+
+  void setOfflineMode(bool enabled) {
+    _offlineModeEnabled = enabled;
+    notifyListeners();
   }
 
   void startPolling() {
-    if (_pollTimer != null) return;
-    _pollTimer = Timer.periodic(pollingInterval, (_) => fetchServices());
+    stopPolling();
+    if (!_autoRefreshEnabled) return;
+
+    _pollTimer = Timer.periodic(
+      Duration(minutes: _intervalInMinutes),
+      (_) => fetchServices(),
+    );
+  }
+
+  void stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
   }
 
   Future<void> fetchServices() async {
     if (_isLoading) return;
-    _isLoading = true; 
-    _isPolling = _pollTimer != null; 
-    _error = null; 
+    _isLoading = true;
+    _isPolling = _pollTimer != null;
+    _error = null;
     notifyListeners();
     try {
       final updated = await repository.getServices();
@@ -61,13 +108,12 @@ class ServiceProvider extends ChangeNotifier {
     } catch (_) {
       _error = 'Mode hors connexion : dernières données conservées.';
     } finally {
-      _isLoading = false; 
-      _isPolling = false; 
+      _isLoading = false;
+      _isPolling = false;
       notifyListeners();
     }
   }
 
-  // Méthode ajoutée depuis la branche dev
   Future<void> refreshServices() async {
     await fetchServices();
   }
@@ -84,9 +130,8 @@ class ServiceProvider extends ChangeNotifier {
   }
 
   @override
-  void dispose() { 
-    _pollTimer?.cancel(); 
-    _pollTimer = null; 
-    super.dispose(); 
+  void dispose() {
+    stopPolling();
+    super.dispose();
   }
 }

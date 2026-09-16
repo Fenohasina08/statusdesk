@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/locale_provider.dart';
+import '../providers/service_provider.dart';
 import '../services/cache_service.dart';
 import '../l10n/app_localizations.dart';
 
@@ -13,13 +14,32 @@ class Parametres extends StatefulWidget {
 }
 
 class _ParametresState extends State<Parametres> {
-  bool _autoRefresh = true;
-  bool _offlineMode = true;
+  // Indique si le cache vient d'être vidé manuellement (force l'affichage à 0 Mo)
+  bool _isCacheCleared = false;
+
+  // Fonction pour calculer dynamiquement la taille du cache selon les données chargées
+  String _getDynamicCacheSize(ServiceProvider provider) {
+    if (_isCacheCleared || provider.services.isEmpty) {
+      return '0 Mo';
+    }
+
+    // Estimation proportionnelle basée sur le nombre de services et de données en cache
+    int serviceCount = provider.services.length;
+    double sizeInKb = serviceCount * 45.0; // ~45 Ko par service avec son historique
+
+    if (sizeInKb < 1024) {
+      return '${sizeInKb.toStringAsFixed(1)} Ko';
+    } else {
+      double sizeInMo = sizeInKb / 1024;
+      return '${sizeInMo.toStringAsFixed(1)} Mo';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeNotifier = context.watch<ThemeNotifier>();
     final localeNotifier = context.watch<LocaleNotifier>();
+    final serviceProvider = context.watch<ServiceProvider>();
     final l10n = AppLocalizations.of(context)!;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -47,6 +67,7 @@ class _ParametresState extends State<Parametres> {
           ),
           const SizedBox(height: 20),
 
+          // --- SECTION APPARENCE ---
           _buildSectionHeader(l10n.appearanceSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
@@ -68,6 +89,7 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
+          // --- SECTION ACTUALISATION ---
           _buildSectionHeader(l10n.refreshSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -76,22 +98,25 @@ class _ParametresState extends State<Parametres> {
                 l10n.autoRefresh,
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
-              value: _autoRefresh,
+              value: serviceProvider.autoRefreshEnabled,
               activeThumbColor: const Color(0xff2196f3),
-              onChanged: (val) => setState(() => _autoRefresh = val),
+              onChanged: (val) {
+                serviceProvider.setAutoRefresh(val);
+              },
             ),
             Divider(height: 1, indent: 56, color: borderColor),
             _buildListTile(
               icon: Icons.access_time_rounded,
               title: l10n.interval,
-              trailingText: l10n.minutes(5),
+              trailingText: l10n.minutes(serviceProvider.intervalInMinutes),
               textColor: textColor,
-              onTap: () {},
+              onTap: () => _showIntervalDialog(context, serviceProvider, l10n),
             ),
           ]),
 
           const SizedBox(height: 20),
 
+          // --- SECTION CACHE & HORS-LIGNE ---
           _buildSectionHeader(l10n.cacheSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -100,20 +125,28 @@ class _ParametresState extends State<Parametres> {
                 l10n.offlineMode,
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
-              value: _offlineMode,
+              value: serviceProvider.offlineModeEnabled,
               activeThumbColor: const Color(0xff2196f3),
-              onChanged: (val) => setState(() => _offlineMode = val),
+              onChanged: (val) {
+                serviceProvider.setOfflineMode(val);
+              },
             ),
             Divider(height: 1, indent: 56, color: borderColor),
             _buildListTile(
               icon: Icons.folder_delete_outlined,
               title: l10n.clearCache,
-              trailingText: '12,5 Mo',
+              trailingText: _getDynamicCacheSize(serviceProvider), // Calcul dynamique
               textColor: textColor,
               onTap: () async {
                 final cacheService = CacheService();
                 await cacheService.clearServices();
                 await cacheService.clearHistory();
+
+                // Marque le cache comme vidé pour afficher 0 Mo immédiatement
+                setState(() {
+                  _isCacheCleared = true;
+                });
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(l10n.cacheCleared)),
@@ -125,16 +158,54 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
+          // --- SECTION À PROPOS ---
           _buildSectionHeader(l10n.aboutSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
               icon: Icons.info_outline_rounded,
               title: l10n.appVersion,
+              trailingText: 'v1.0.0',
               textColor: textColor,
               onTap: () {},
             ),
           ]),
         ],
+      ),
+    );
+  }
+
+  // --- DIALOGUES ---
+  void _showIntervalDialog(
+    BuildContext context,
+    ServiceProvider serviceProvider,
+    AppLocalizations l10n,
+  ) {
+    final intervals = [1, 2, 5, 10, 15, 30];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.interval),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: RadioGroup<int>(
+            groupValue: serviceProvider.intervalInMinutes,
+            onChanged: (val) {
+              if (val != null) {
+                serviceProvider.setInterval(val);
+                Navigator.pop(context);
+              }
+            },
+            child: ListView(
+              shrinkWrap: true,
+              children: intervals.map((minutes) {
+                return RadioListTile<int>(
+                  title: Text(l10n.minutes(minutes)),
+                  value: minutes,
+                );
+              }).toList(),
+            ),
+          ),
+        ),
       ),
     );
   }
