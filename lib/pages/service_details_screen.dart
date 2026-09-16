@@ -121,7 +121,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget _badge(String text, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withOpacity(.14),
+          color: color.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Text(text,
