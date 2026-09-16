@@ -2,24 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/locale_provider.dart';
+import '../providers/service_provider.dart';
 import '../services/cache_service.dart';
 import '../l10n/app_localizations.dart';
 
-class Parametres extends StatefulWidget {
+class Parametres extends StatelessWidget {
   const Parametres({super.key});
-
-  @override
-  State<Parametres> createState() => _ParametresState();
-}
-
-class _ParametresState extends State<Parametres> {
-  bool _autoRefresh = true;
-  bool _offlineMode = true;
 
   @override
   Widget build(BuildContext context) {
     final themeNotifier = context.watch<ThemeNotifier>();
     final localeNotifier = context.watch<LocaleNotifier>();
+    final serviceProvider = context.watch<ServiceProvider>();
     final l10n = AppLocalizations.of(context)!;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -47,6 +41,7 @@ class _ParametresState extends State<Parametres> {
           ),
           const SizedBox(height: 20),
 
+          // --- SECTION APPARENCE ---
           _buildSectionHeader(l10n.appearanceSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
@@ -68,6 +63,7 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
+          // --- SECTION ACTUALISATION ---
           _buildSectionHeader(l10n.refreshSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -76,22 +72,25 @@ class _ParametresState extends State<Parametres> {
                 l10n.autoRefresh,
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
-              value: _autoRefresh,
-              activeThumbColor: const Color(0xff2196f3),
-              onChanged: (val) => setState(() => _autoRefresh = val),
+              value: serviceProvider.autoRefreshEnabled,
+              activeColor: const Color(0xff2196f3),
+              onChanged: (val) {
+                serviceProvider.setAutoRefresh(val);
+              },
             ),
             Divider(height: 1, indent: 56, color: borderColor),
             _buildListTile(
               icon: Icons.access_time_rounded,
               title: l10n.interval,
-              trailingText: l10n.minutes(5),
+              trailingText: l10n.minutes(serviceProvider.intervalInMinutes),
               textColor: textColor,
-              onTap: () {},
+              onTap: () => _showIntervalDialog(context, serviceProvider, l10n),
             ),
           ]),
 
           const SizedBox(height: 20),
 
+          // --- SECTION CACHE & HORS-LIGNE ---
           _buildSectionHeader(l10n.cacheSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -100,9 +99,11 @@ class _ParametresState extends State<Parametres> {
                 l10n.offlineMode,
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
-              value: _offlineMode,
-              activeThumbColor: const Color(0xff2196f3),
-              onChanged: (val) => setState(() => _offlineMode = val),
+              value: serviceProvider.offlineModeEnabled,
+              activeColor: const Color(0xff2196f3),
+              onChanged: (val) {
+                serviceProvider.setOfflineMode(val);
+              },
             ),
             Divider(height: 1, indent: 56, color: borderColor),
             _buildListTile(
@@ -125,16 +126,52 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
+          // --- SECTION À PROPOS ---
           _buildSectionHeader(l10n.aboutSection, textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
               icon: Icons.info_outline_rounded,
               title: l10n.appVersion,
+              trailingText: 'v1.0.0',
               textColor: textColor,
               onTap: () {},
             ),
           ]),
         ],
+      ),
+    );
+  }
+
+  // --- DIALOGUE DE CONFIGURATION DE L'INTERVALLE ---
+  void _showIntervalDialog(
+    BuildContext context,
+    ServiceProvider serviceProvider,
+    AppLocalizations l10n,
+  ) {
+    final intervals = [1, 2, 5, 10, 15, 30];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.interval),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: intervals.map((minutes) {
+              return RadioListTile<int>(
+                title: Text(l10n.minutes(minutes)),
+                value: minutes,
+                groupValue: serviceProvider.intervalInMinutes,
+                onChanged: (val) {
+                  if (val != null) {
+                    serviceProvider.setInterval(val);
+                    Navigator.pop(context);
+                  }
+                },
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
@@ -150,31 +187,43 @@ class _ParametresState extends State<Parametres> {
         title: Text(l10n.chooseTheme),
         content: SizedBox(
           width: double.maxFinite,
-          child: RadioGroup<ThemeMode>(
-            groupValue: themeNotifier.themeMode,
-            onChanged: (val) {
-              if (val != null) {
-                themeNotifier.setTheme(val);
-                Navigator.pop(context);
-              }
-            },
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                RadioListTile<ThemeMode>(
-                  title: Text(l10n.systemTheme),
-                  value: ThemeMode.system,
-                ),
-                RadioListTile<ThemeMode>(
-                  title: Text(l10n.lightTheme),
-                  value: ThemeMode.light,
-                ),
-                RadioListTile<ThemeMode>(
-                  title: Text(l10n.darkTheme),
-                  value: ThemeMode.dark,
-                ),
-              ],
-            ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              RadioListTile<ThemeMode>(
+                title: Text(l10n.systemTheme),
+                value: ThemeMode.system,
+                groupValue: themeNotifier.themeMode,
+                onChanged: (val) {
+                  if (val != null) {
+                    themeNotifier.setTheme(val);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<ThemeMode>(
+                title: Text(l10n.lightTheme),
+                value: ThemeMode.light,
+                groupValue: themeNotifier.themeMode,
+                onChanged: (val) {
+                  if (val != null) {
+                    themeNotifier.setTheme(val);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<ThemeMode>(
+                title: Text(l10n.darkTheme),
+                value: ThemeMode.dark,
+                groupValue: themeNotifier.themeMode,
+                onChanged: (val) {
+                  if (val != null) {
+                    themeNotifier.setTheme(val);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),
@@ -192,27 +241,32 @@ class _ParametresState extends State<Parametres> {
         title: Text(l10n.chooseLanguage),
         content: SizedBox(
           width: double.maxFinite,
-          child: RadioGroup<String>(
-            groupValue: localeNotifier.locale.languageCode,
-            onChanged: (val) {
-              if (val != null) {
-                localeNotifier.setLocale(Locale(val));
-                Navigator.pop(context);
-              }
-            },
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                RadioListTile<String>(
-                  title: Text(l10n.french),
-                  value: 'fr',
-                ),
-                RadioListTile<String>(
-                  title: Text(l10n.english),
-                  value: 'en',
-                ),
-              ],
-            ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              RadioListTile<String>(
+                title: Text(l10n.french),
+                value: 'fr',
+                groupValue: localeNotifier.locale.languageCode,
+                onChanged: (val) {
+                  if (val != null) {
+                    localeNotifier.setLocale(Locale(val));
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text(l10n.english),
+                value: 'en',
+                groupValue: localeNotifier.locale.languageCode,
+                onChanged: (val) {
+                  if (val != null) {
+                    localeNotifier.setLocale(Locale(val));
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),
