@@ -10,8 +10,12 @@ import '../utils/api_exceptions.dart';
 
 class ServiceProvider extends ChangeNotifier {
   final ServiceRepository repository;
+  final http.Client _httpClient;
 
-  ServiceProvider({required this.repository}) {
+  ServiceProvider({
+    required this.repository,
+    http.Client? httpClient,
+  }) : _httpClient = httpClient ?? http.Client() {
     _initConnectivity();
   }
 
@@ -71,9 +75,7 @@ class ServiceProvider extends ChangeNotifier {
 
     // Filet de sécurité : sur desktop natif, l'interface peut rester "up"
     // (Docker, VPN, bridges) sans accès internet réel, et l'OS ne redéclenche
-    // pas toujours onConnectivityChanged. On revérifie donc l'état complet
-    // périodiquement, en repassant par checkConnectivity() (et non un ping
-    // direct) pour garder un comportement cohérent web/desktop/mobile.
+    // pas toujours onConnectivityChanged. On revérifie donc périodiquement.
     _connectivityPollTimer = Timer.periodic(
       const Duration(seconds: 15),
       (_) async {
@@ -109,17 +111,16 @@ class ServiceProvider extends ChangeNotifier {
   /// Vérifie un vrai accès internet (au-delà du simple état d'interface).
   /// Sur le web, les requêtes cross-origin sont bloquées par CORS pour la
   /// quasi-totalité des domaines externes : on se fie donc à l'état fourni
-  /// par connectivity_plus (navigator.onLine du navigateur), déjà vérifié
-  /// juste avant cet appel. Sur desktop/mobile, on confirme avec une vraie
-  /// requête HTTP, car l'interface peut être "up" (Docker/VPN/bridge) sans
-  /// accès internet réel.
+  /// par connectivity_plus (navigator.onLine), déjà vérifié juste avant.
+  /// Sur desktop/mobile, on confirme avec une vraie requête HTTP, car
+  /// l'interface peut être "up" (Docker/VPN/bridge) sans accès réel.
   Future<bool> _hasInternetAccess() async {
     if (kIsWeb) {
       return true;
     }
 
     try {
-      final response = await http
+      final response = await _httpClient
           .get(Uri.parse('https://www.gstatic.com/generate_204'))
           .timeout(const Duration(seconds: 5));
       return response.statusCode == 204 || response.statusCode == 200;
@@ -241,6 +242,7 @@ class ServiceProvider extends ChangeNotifier {
     _connectivitySubscription?.cancel();
     _connectivityPollTimer?.cancel();
     stopPolling();
+    _httpClient.close();
     super.dispose();
   }
 }
