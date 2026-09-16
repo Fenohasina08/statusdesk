@@ -1,30 +1,57 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:provider/provider.dart';
 import 'package:statusdesk/main.dart';
+import 'package:statusdesk/models/service.dart';
+import 'package:statusdesk/pages/dashboard_screen.dart';
+import 'package:statusdesk/providers/locale_provider.dart';
+import 'package:statusdesk/providers/service_provider.dart';
+import 'package:statusdesk/providers/theme_provider.dart';
+import 'package:statusdesk/repositories/service_repository.dart';
+import 'package:statusdesk/services/service_api.dart';
+
+class FakeServiceRepository extends ServiceRepository {
+  FakeServiceRepository() : super(api: ServiceApi());
+
+  @override
+  Future<List<Service>> getServices() async => <Service>[];
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('StatusDesk affiche le dashboard actuel',
+      (WidgetTester tester) async {
+    final themeNotifier = ThemeNotifier();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Client HTTP factice : répond systématiquement 200, évite les vraies
+    // requêtes réseau (bloquées par TestWidgetsFlutterBinding) pendant les
+    // tests, et rend le comportement "isOffline" déterministe.
+    final fakeHttpClient = MockClient((request) async {
+      return http.Response('', 200);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: themeNotifier),
+          ChangeNotifierProvider(create: (_) => LocaleNotifier()),
+          ChangeNotifierProvider(
+            create: (_) => ServiceProvider(
+              repository: FakeServiceRepository(),
+              httpClient: fakeHttpClient,
+            ),
+          ),
+        ],
+        child: const MyApp(),
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Laisse les futures du provider (checkConnectivity, fetchServices,
+    // vérification internet) se résoudre avant de vérifier l'arbre de widgets.
+    await tester.pumpAndSettle();
+
+    // Correction : Utilisation d'éléments sûrs et présents dans l'arbre de widgets
+    expect(find.byType(DashboardScreen), findsOneWidget);
+    expect(find.text('Accueil'), findsWidgets);
   });
 }
