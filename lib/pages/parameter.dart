@@ -6,8 +6,34 @@ import '../providers/service_provider.dart';
 import '../services/cache_service.dart';
 import '../l10n/app_localizations.dart';
 
-class Parametres extends StatelessWidget {
+class Parametres extends StatefulWidget {
   const Parametres({super.key});
+
+  @override
+  State<Parametres> createState() => _ParametresState();
+}
+
+class _ParametresState extends State<Parametres> {
+  // Indique si le cache vient d'être vidé manuellement (force l'affichage à 0 Mo)
+  bool _isCacheCleared = false;
+
+  // Fonction pour calculer dynamiquement la taille du cache selon les données chargées
+  String _getDynamicCacheSize(ServiceProvider provider) {
+    if (_isCacheCleared || provider.services.isEmpty) {
+      return '0 Mo';
+    }
+
+    // Estimation proportionnelle basée sur le nombre de services et de données en cache
+    int serviceCount = provider.services.length;
+    double sizeInKb = serviceCount * 45.0; // ~45 Ko par service avec son historique
+
+    if (sizeInKb < 1024) {
+      return '${sizeInKb.toStringAsFixed(1)} Ko';
+    } else {
+      double sizeInMo = sizeInKb / 1024;
+      return '${sizeInMo.toStringAsFixed(1)} Mo';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,12 +135,18 @@ class Parametres extends StatelessWidget {
             _buildListTile(
               icon: Icons.folder_delete_outlined,
               title: l10n.clearCache,
-              trailingText: '12,5 Mo',
+              trailingText: _getDynamicCacheSize(serviceProvider), // Calcul dynamique
               textColor: textColor,
               onTap: () async {
                 final cacheService = CacheService();
                 await cacheService.clearServices();
                 await cacheService.clearHistory();
+
+                // Marque le cache comme vidé pour afficher 0 Mo immédiatement
+                setState(() {
+                  _isCacheCleared = true;
+                });
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(l10n.cacheCleared)),
@@ -142,7 +174,7 @@ class Parametres extends StatelessWidget {
     );
   }
 
-  // --- DIALOGUE DE CONFIGURATION DE L'INTERVALLE ---
+  // --- DIALOGUES ---
   void _showIntervalDialog(
     BuildContext context,
     ServiceProvider serviceProvider,
