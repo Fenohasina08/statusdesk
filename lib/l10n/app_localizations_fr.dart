@@ -140,4 +140,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chooseLanguage => 'Choisir la langue';
+
+  @override
+  String get all => 'Tous';
 }

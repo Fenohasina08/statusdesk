@@ -54,5 +54,6 @@
   "systemTheme": "System",
   "lightTheme": "Light",
   "darkTheme": "Dark",
-  "chooseLanguage": "Choose language"
+  "chooseLanguage": "Choose language",
+  "all": "All"
 }

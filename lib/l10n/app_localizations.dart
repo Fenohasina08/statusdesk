@@ -349,6 +349,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose language'**
   String get chooseLanguage;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
 }
 
 class _AppLocalizationsDelegate
