@@ -1,7 +1,7 @@
- import 'package:flutter/material.dart';
-
+import 'package:flutter/material.dart';
 import 'Accueil.dart';
 import 'Services.dart';
+import 'Parameters.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -11,36 +11,41 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-    List<Widget> pages = [
-      const Accueil(),
-      const Services(),
-    ];
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [
+    Accueil(),
+    Services(),
+    Parametres(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:pages[_selectedIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        selectedItemColor: const Color(0xff2196f3),
         unselectedItemColor: Colors.grey,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-        items: const <BottomNavigationBarItem>[
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_sharp),
+            icon: Icon(Icons.list_alt_rounded),
+            activeIcon: Icon(Icons.list),
             label: 'Services',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
+            label: 'Paramètres', // Affichage avec accent dans la barre de navigation
           ),
         ],
       ),
