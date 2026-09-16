@@ -1,0 +1,59 @@
+{
+  "statusDesk": "StatusDesk",
+  "services": "Services",
+  "home": "Accueil",
+  "settings": "Paramètres",
+  "goodMorning": "Bonjour",
+  "goodEvening": "Bonsoir",
+  "servicesStateMessage": "Voici l'état de vos services.",
+  "servicesDownIncident": "Des services sont actuellement indisponibles.",
+  "servicesDegradedIncident": "Certains services rencontrent des ralentissements.",
+  "servicesAllOperational": "Tout fonctionne bien ! Aucun incident majeur en cours.",
+  "lastSync": "Dernière synchro : {time}",
+  "@lastSync": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "waiting": "En attente",
+  "operational": "Opérationnels",
+  "degraded": "Dégradé",
+  "unavailable": "Indisponible",
+  "operationalStatus": "Opérationnel",
+  "degradedStatus": "Dégradé",
+  "unavailableStatus": "Indisponible",
+  "searchServiceHint": "Rechercher un service...",
+  "noServicesFound": "Aucun service trouvé.",
+  "retry": "Réessayer",
+  "french": "Français",
+  "english": "Anglais",
+  "settingsTitle": "Paramètres",
+  "appearanceSection": "Apparence",
+  "theme": "Thème",
+  "language": "Langue",
+  "refreshSection": "Actualisation",
+  "autoRefresh": "Actualisation automatique",
+  "interval": "Intervalle",
+  "minutes": "{count} minutes",
+  "@minutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cacheSection": "Cache et Hors-ligne",
+  "offlineMode": "Mode hors-ligne",
+  "clearCache": "Vider le cache",
+  "cacheCleared": "Cache vidé avec succès",
+  "aboutSection": "À propos",
+  "appVersion": "Version de l'application",
+  "chooseTheme": "Choisir le thème",
+  "systemTheme": "Système",
+  "lightTheme": "Clair",
+  "darkTheme": "Sombre",
+  "chooseLanguage": "Choisir la langue",
+  "all": "Tous"
+}

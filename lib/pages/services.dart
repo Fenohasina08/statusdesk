@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:statusdesk/l10n/app_localizations.dart';
 import '../models/service.dart';
 import '../providers/service_provider.dart';
 import 'service_details_screen.dart';
@@ -28,6 +29,7 @@ class _ServicesState extends State<Services> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final provider = context.watch<ServiceProvider>();
     final services = provider.services.where((service) {
       final query = _query.toLowerCase();
@@ -51,9 +53,14 @@ class _ServicesState extends State<Services> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Services',
-                    style:
-                        TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textColor)),
+                Text(
+                  l10n.services,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
                 IconButton(
                   onPressed: provider.isLoading
                       ? null
@@ -73,10 +80,18 @@ class _ServicesState extends State<Services> {
               onChanged: (value) => setState(() => _query = value),
               style: TextStyle(color: textColor),
               decoration: InputDecoration(
-                hintText: 'Rechercher un service...',
-                hintStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey),
-                prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey.shade400 : Colors.grey),
-                suffixIcon: Icon(Icons.filter_list, color: isDark ? Colors.grey.shade400 : Colors.grey),
+                hintText: l10n.searchServiceHint,
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                ),
+                suffixIcon: Icon(
+                  Icons.filter_list,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                ),
                 filled: true,
                 fillColor: isDark ? const Color(0xff1e1e1e) : Colors.white,
                 border: OutlineInputBorder(
@@ -88,12 +103,14 @@ class _ServicesState extends State<Services> {
             const SizedBox(height: 14),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(children: [
-                _filter('Tous', null, isDark),
-                _filter('Opérationnels', ServiceStatus.operational, isDark),
-                _filter('Dégradés', ServiceStatus.degraded, isDark),
-                _filter('Indisponibles', ServiceStatus.down, isDark),
-              ]),
+              child: Row(
+                children: [
+                  _filter(l10n.all, null, isDark),
+                  _filter(l10n.operational, ServiceStatus.operational, isDark),
+                  _filter(l10n.degraded, ServiceStatus.degraded, isDark),
+                  _filter(l10n.unavailable, ServiceStatus.down, isDark),
+                ],
+              ),
             ),
             const SizedBox(height: 14),
             if (provider.isLoading && provider.services.isEmpty)
@@ -112,7 +129,10 @@ class _ServicesState extends State<Services> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(30),
-                  child: Text('Aucun service trouvé.', style: TextStyle(color: textColor)),
+                  child: Text(
+                    l10n.noServicesFound,
+                    style: TextStyle(color: textColor),
+                  ),
                 ),
               )
             else
@@ -131,7 +151,9 @@ class _ServicesState extends State<Services> {
         label: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : (isDark ? Colors.grey.shade300 : const Color(0xff343a40)),
+            color: selected
+                ? Colors.white
+                : (isDark ? Colors.grey.shade300 : const Color(0xff343a40)),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -139,7 +161,9 @@ class _ServicesState extends State<Services> {
         selectedColor: const Color(0xff2196f3),
         backgroundColor: isDark ? const Color(0xff1e1e1e) : Colors.white,
         side: BorderSide(
-          color: selected ? const Color(0xff2196f3) : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+          color: selected
+              ? const Color(0xff2196f3)
+              : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
         ),
         onSelected: (_) => setState(() => _status = status),
       ),
@@ -153,16 +177,17 @@ class _ServiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = service.status == ServiceStatus.operational
         ? const Color(0xff28a745)
         : service.status == ServiceStatus.degraded
             ? const Color(0xffff9800)
             : const Color(0xffdc3545);
     final label = service.status == ServiceStatus.operational
-        ? 'Opérationnel'
+        ? l10n.operationalStatus
         : service.status == ServiceStatus.degraded
-            ? 'Dégradé'
-            : 'Indisponible';
+            ? l10n.degradedStatus
+            : l10n.unavailableStatus;
     final icon = service.status == ServiceStatus.operational
         ? Icons.check
         : service.status == ServiceStatus.degraded
@@ -179,10 +204,14 @@ class _ServiceRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200, width: 1),
+        side: BorderSide(
+          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          width: 1,
+        ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -193,12 +222,16 @@ class _ServiceRow extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.2),
           child: Icon(icon, color: color),
         ),
-        title: Text(service.name,
-            style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+        title: Text(
+          service.name,
+          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+        ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text(label,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+          child: Text(
+            label,
+            style: TextStyle(color: color, fontWeight: FontWeight.w600),
+          ),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -208,7 +241,9 @@ class _ServiceRow extends StatelessWidget {
                   ? '—'
                   : '${service.responseTime} ms',
               style: TextStyle(
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700, fontWeight: FontWeight.w600),
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: Colors.grey),
@@ -225,11 +260,22 @@ class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.message, required this.onRetry});
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Text(message, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)),
-          const SizedBox(height: 10),
-          ElevatedButton(onPressed: onRetry, child: const Text('Réessayer')),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      children: [
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton(onPressed: onRetry, child: Text(l10n.retry)),
+      ],
+    );
+  }
 }
