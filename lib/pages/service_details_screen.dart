@@ -61,8 +61,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Détails du service',
-            style: TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: SafeArea(
         child: ListView(

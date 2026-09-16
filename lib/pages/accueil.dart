@@ -50,17 +50,6 @@ class _AccueilState extends State<Accueil> {
           physics: const AlwaysScrollableScrollPhysics(), 
           padding: const EdgeInsets.fromLTRB(16, 46, 16, 24), 
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-              children: [
-                Text(l10n.statusDesk, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textColor)), 
-                IconButton(
-                  onPressed: provider.isLoading ? null : provider.fetchServices, 
-                  icon: provider.isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(Icons.refresh, color: textColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20), 
             _StatusBanner(
               color: statusColor, 
               hasIncident: down > 0 || degraded > 0, 

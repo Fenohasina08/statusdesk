@@ -54,19 +54,17 @@ class _ParametresState extends State<Parametres> {
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: bgColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: textColor),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 46, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
         children: [
-          Text(
-            l10n.settingsTitle,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 20),
-
           // --- SECTION APPARENCE ---
           _buildSectionHeader(l10n.appearanceSection, textColor),
           _buildCard(cardColor, borderColor, children: [
