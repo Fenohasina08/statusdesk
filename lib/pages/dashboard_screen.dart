@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/service_provider.dart';
 import 'accueil.dart';
 import 'parameter.dart';
 import 'services.dart';
@@ -12,22 +14,18 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
-  
-  // Historique des onglets pour gérer le bouton retour intelligent
   final List<int> _history = [0];
 
-  // Fonction pour changer d'onglet en mémorisant l'historique
   void _onTabTapped(int index) {
     if (_currentIndex != index) {
       setState(() {
-        _history.remove(index); // Évite les doublons
-        _history.add(_currentIndex); // Mémorise l'onglet précédent
+        _history.remove(index);
+        _history.add(_currentIndex);
         _currentIndex = index;
       });
     }
   }
 
-  // Fonction pour retourner à l'onglet précédent
   void _goToPreviousTab() {
     if (_history.isNotEmpty) {
       setState(() {
@@ -35,19 +33,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     } else {
       setState(() {
-        _currentIndex = 0; // Par défaut, retourne à l'Accueil
+        _currentIndex = 0;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Le bandeau s'affiche si la connexion est perdue OU si l'utilisateur active manuellement le mode hors-ligne
+    final serviceProvider = context.watch<ServiceProvider>();
+    final isOffline = serviceProvider.isOffline || serviceProvider.offlineModeEnabled;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     final navBgColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
     final unselectedColor = isDark ? Colors.grey.shade400 : Colors.grey;
 
-    // On passe le callback de retour à la page Parametres
     final List<Widget> pages = [
       const Accueil(),
       const Services(),
@@ -55,9 +55,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
+      body: Column(
+        children: [
+          // Bandeau d'alerte automatique affiché tout en haut si hors-ligne
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isOffline ? 36.0 : 0.0,
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Container(
+                width: double.infinity,
+                color: const Color(0xffff9800),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.cloud_off, color: Colors.white, size: 16),
+                    SizedBox(width: 8),
+                    Text(
+                      'Mode hors-ligne actif (Données en cache)',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Corps de l'application (les onglets)
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: pages,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
