@@ -16,7 +16,10 @@ Future<void> main() async {
   runApp(
     ChangeNotifierProvider(
       create: (_) => ServiceProvider(
-        repository: ServiceRepository(api: ServiceApi()),
+        repository: ServiceRepository(
+          api: ServiceApi(),
+          cache: CacheService(),
+        ),
       )
         ..initialize()
         ..startPolling(),
@@ -32,7 +35,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         title: 'StatusDesk',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+        theme: ThemeData(
+          colorSchemeSeed: Colors.indigo,
+          useMaterial3: true,
+        ),
         home: const DashboardScreen(),
       );
 }

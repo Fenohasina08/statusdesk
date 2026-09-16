@@ -8,6 +8,7 @@ import '../utils/api_exceptions.dart';
 
 class ServiceProvider extends ChangeNotifier {
   final ServiceRepository repository;
+
   ServiceProvider({required this.repository});
   static const pollingInterval = Duration(seconds: 15);
   static const maxHistoryEntries = 10;
@@ -46,7 +47,10 @@ class ServiceProvider extends ChangeNotifier {
 
   Future<void> fetchServices() async {
     if (_isLoading) return;
-    _isLoading = true; _isPolling = _pollTimer != null; _error = null; notifyListeners();
+    _isLoading = true; 
+    _isPolling = _pollTimer != null; 
+    _error = null; 
+    notifyListeners();
     try {
       final updated = await repository.getServices();
       _services = updated;
@@ -57,8 +61,15 @@ class ServiceProvider extends ChangeNotifier {
     } catch (_) {
       _error = 'Mode hors connexion : dernières données conservées.';
     } finally {
-      _isLoading = false; _isPolling = false; notifyListeners();
+      _isLoading = false; 
+      _isPolling = false; 
+      notifyListeners();
     }
+  }
+
+  // Méthode ajoutée depuis la branche dev
+  Future<void> refreshServices() async {
+    await fetchServices();
   }
 
   void _recordHistory(List<Service> services) {
@@ -66,10 +77,16 @@ class ServiceProvider extends ChangeNotifier {
       final entries = _history.putIfAbsent(service.url, () => <Service>[]);
       entries.removeWhere((entry) => entry.lastChecked == service.lastChecked);
       entries.insert(0, service);
-      if (entries.length > maxHistoryEntries) entries.removeRange(maxHistoryEntries, entries.length);
+      if (entries.length > maxHistoryEntries) {
+        entries.removeRange(maxHistoryEntries, entries.length);
+      }
     }
   }
 
   @override
-  void dispose() { _pollTimer?.cancel(); _pollTimer = null; super.dispose(); }
+  void dispose() { 
+    _pollTimer?.cancel(); 
+    _pollTimer = null; 
+    super.dispose(); 
+  }
 }

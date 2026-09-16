@@ -4,14 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
 import 'package:statusdesk/models/service.dart';
+import 'package:statusdesk/repositories/service_repository.dart';
 import 'package:statusdesk/services/cache_service.dart';
+import 'package:statusdesk/services/service_api.dart';
 
 void main() {
   late Directory testDirectory;
 
   setUpAll(() async {
     testDirectory = await Directory.systemTemp.createTemp(
-      'statusdesk_test_',
+      'statusdesk_fallback_test_',
     );
 
     Hive.init(testDirectory.path);
@@ -30,25 +32,35 @@ void main() {
     await testDirectory.delete(recursive: true);
   });
 
-  test('saveServices and getCachedServices work correctly', () async {
+  test('returns cached services when API fails', () async {
     final cacheService = CacheService();
 
-    final service = Service(
+    final cachedService = Service(
       name: 'GitHub',
       status: ServiceStatus.operational,
       responseTime: 120,
-      lastChecked: DateTime(2026, 9, 14, 19, 0),
+      lastChecked: DateTime(2026, 9, 14),
       url: 'https://github.com',
     );
 
-    await cacheService.saveServices([service]);
+    // On prépare le cache.
+    await cacheService.saveServices([cachedService]);
 
-    final cachedServices = await cacheService.getCachedServices();
+    // URL volontairement invalide pour provoquer une erreur réseau.
+    final api = ServiceApi(
+      baseUrl: 'http://127.0.0.1:59999',
+    );
 
-    expect(cachedServices.length, 1);
-    expect(cachedServices.first.name, 'GitHub');
-    expect(cachedServices.first.status, ServiceStatus.operational);
-    expect(cachedServices.first.responseTime, 120);
-    expect(cachedServices.first.url, 'https://github.com');
+    final repository = ServiceRepository(
+      api: api,
+      cache: cacheService,
+    );
+
+    final services = await repository.getServices();
+
+    expect(services.length, 1);
+    expect(services.first.name, 'GitHub');
+    expect(services.first.status, ServiceStatus.operational);
+    expect(services.first.responseTime, 120);
   });
 }

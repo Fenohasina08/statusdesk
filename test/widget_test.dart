@@ -1,8 +1,3 @@
-// Test de fumée basique pour l'app StatusDesk.
-//
-// Vérifie que l'app démarre correctement et affiche le placeholder
-// du tableau de bord (AppBar "StatusDesk" + message d'accueil).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -26,11 +21,8 @@ void main() {
       ),
     );
 
-    // Le titre de l'AppBar est bien affiché.
     expect(find.text('StatusDesk'), findsOneWidget);
     expect(find.text('Etat des services'), findsOneWidget);
-
-    // Le message placeholder du body est présent.
     expect(find.text('Foundations ready ✅ — Dashboard coming soon'), findsOneWidget);
   });
 }
