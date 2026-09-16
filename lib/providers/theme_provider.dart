@@ -13,7 +13,6 @@ class ThemeNotifier extends ChangeNotifier {
       case ThemeMode.dark:
         return 'Sombre';
       case ThemeMode.system:
-      default:
         return 'Système';
     }
   }
@@ -52,7 +51,6 @@ class ThemeNotifier extends ChangeNotifier {
       case ThemeMode.dark:
         return 'dark';
       case ThemeMode.system:
-      default:
         return 'system';
     }
   }
