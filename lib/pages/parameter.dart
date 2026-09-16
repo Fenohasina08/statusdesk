@@ -18,17 +18,15 @@ class _ParametresState extends State<Parametres> {
   Widget build(BuildContext context) {
     final themeNotifier = context.watch<ThemeNotifier>();
     
-    // Détecter si le thème actuel est sombre
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Couleurs dynamiques selon le mode clair / sombre
     final bgColor = isDark ? const Color(0xff121212) : const Color(0xfff8f9fa);
     final cardColor = isDark ? const Color(0xff1e1e1e) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xff1e293b);
     final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
 
     return Scaffold(
-      backgroundColor: bgColor, // <--- S'adapte au thème
+      backgroundColor: bgColor,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 46, 16, 24),
         children: [
@@ -37,12 +35,11 @@ class _ParametresState extends State<Parametres> {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: textColor, // <--- S'adapte au thème
+              color: textColor,
             ),
           ),
           const SizedBox(height: 20),
 
-          // Section : Apparence
           _buildSectionHeader('Apparence', textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
@@ -64,7 +61,6 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
-          // Section : Actualisation
           _buildSectionHeader('Actualisation', textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -74,7 +70,7 @@ class _ParametresState extends State<Parametres> {
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
               value: _autoRefresh,
-              activeColor: const Color(0xff2196f3),
+              activeThumbColor: const Color(0xff2196f3),
               onChanged: (val) => setState(() => _autoRefresh = val),
             ),
             Divider(height: 1, indent: 56, color: borderColor),
@@ -89,7 +85,6 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
-          // Section : Cache
           _buildSectionHeader('Cache', textColor),
           _buildCard(cardColor, borderColor, children: [
             SwitchListTile(
@@ -99,7 +94,7 @@ class _ParametresState extends State<Parametres> {
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
               value: _offlineMode,
-              activeColor: const Color(0xff2196f3),
+              activeThumbColor: const Color(0xff2196f3),
               onChanged: (val) => setState(() => _offlineMode = val),
             ),
             Divider(height: 1, indent: 56, color: borderColor),
@@ -123,7 +118,6 @@ class _ParametresState extends State<Parametres> {
 
           const SizedBox(height: 20),
 
-          // Section : À propos
           _buildSectionHeader('À propos', textColor),
           _buildCard(cardColor, borderColor, children: [
             _buildListTile(
@@ -145,37 +139,31 @@ class _ParametresState extends State<Parametres> {
         title: const Text('Choisir le thème'),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              RadioListTile<ThemeMode>(
-                title: const Text('Système'),
-                value: ThemeMode.system,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  themeNotifier.setTheme(val!);
-                  Navigator.pop(context);
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: const Text('Clair'),
-                value: ThemeMode.light,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  themeNotifier.setTheme(val!);
-                  Navigator.pop(context);
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: const Text('Sombre'),
-                value: ThemeMode.dark,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  themeNotifier.setTheme(val!);
-                  Navigator.pop(context);
-                },
-              ),
-            ],
+          child: RadioGroup<ThemeMode>(
+            groupValue: themeNotifier.themeMode,
+            onChanged: (val) {
+              if (val != null) {
+                themeNotifier.setTheme(val);
+                Navigator.pop(context);
+              }
+            },
+            child: ListView(
+              shrinkWrap: true,
+              children: const [
+                RadioListTile<ThemeMode>(
+                  title: Text('Système'),
+                  value: ThemeMode.system,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text('Clair'),
+                  value: ThemeMode.light,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text('Sombre'),
+                  value: ThemeMode.dark,
+                ),
+              ],
+            ),
           ),
         ),
       ),
