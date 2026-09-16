@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:statusdesk/main.dart';
@@ -14,7 +13,7 @@ void main() {
       ChangeNotifierProvider(
         create: (_) => ServiceProvider(
           repository: ServiceRepository(
-            api: ServiceApi(baseUrl: 'https://ton-api.example.com'),
+            api: ServiceApi(),
           ),
         ),
         child: const MyApp(),
