@@ -115,7 +115,7 @@ class _StatusBanner extends StatelessWidget {
     
     return Card(
       elevation: 0, 
-      color: color.withValues(alpha: 0.12), // Corrigé ici
+      color: color.withValues(alpha: 0.12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
       child: Padding(
         padding: const EdgeInsets.all(18), 
@@ -159,9 +159,9 @@ class _MetricCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8), 
     decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.1), // Corrigé ici
+      color: color.withValues(alpha: 0.1), 
       borderRadius: BorderRadius.circular(13), 
-      border: Border.all(color: color.withValues(alpha: 0.35)), // Corrigé ici
+      border: Border.all(color: color.withValues(alpha: 0.35)), 
     ), 
     child: Column(
       children: [
@@ -192,7 +192,7 @@ class _ServiceCard extends StatelessWidget {
       child: ListTile(
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ServiceDetailScreen(service: service))), 
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.14), // Corrigé ici
+          backgroundColor: color.withValues(alpha: 0.14), 
           child: Icon(service.status == ServiceStatus.operational ? Icons.check : service.status == ServiceStatus.degraded ? Icons.warning_rounded : Icons.close, color: color),
         ), 
         title: Text(service.name, style: const TextStyle(fontWeight: FontWeight.bold)), 

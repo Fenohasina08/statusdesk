@@ -2,11 +2,19 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:statusdesk/models/service.dart';
 import 'package:statusdesk/repositories/service_repository.dart';
 import 'package:statusdesk/services/cache_service.dart';
 import 'package:statusdesk/services/service_api.dart';
+
+class FakeFailingHttpClient extends http.BaseClient {
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    throw const SocketException('Simulated network failure');
+  }
+}
 
 void main() {
   late Directory testDirectory;
@@ -32,35 +40,40 @@ void main() {
     await testDirectory.delete(recursive: true);
   });
 
-  test('returns cached services when API fails', () async {
+  test('returns all cached services when API fails', () async {
     final cacheService = CacheService();
+    final serviceNames = [
+      'GitHub API',
+      'FreeOpenAPI',
+      'Cloudflare',
+      'Test HTTP 200',
+      'Test indisponible',
+      'FakeStore API',
+      'DummyJSON Products',
+      'Platzi Fake Store',
+    ];
 
-    final cachedService = Service(
-      name: 'GitHub',
-      status: ServiceStatus.operational,
-      responseTime: 120,
-      lastChecked: DateTime(2026, 9, 14),
-      url: 'https://github.com',
-    );
+    final cachedServices = serviceNames
+        .map(
+          (name) => Service(
+            name: name,
+            status: ServiceStatus.operational,
+            responseTime: 120,
+            lastChecked: DateTime(2026, 9, 14),
+            url: 'https://example.com/$name',
+          ),
+        )
+        .toList();
 
-    // On prépare le cache.
-    await cacheService.saveServices([cachedService]);
+    await cacheService.saveServices(cachedServices);
 
-    // URL volontairement invalide pour provoquer une erreur réseau.
-    final api = ServiceApi(
-      baseUrl: 'http://127.0.0.1:59999',
-    );
-
-    final repository = ServiceRepository(
-      api: api,
-      cache: cacheService,
-    );
+    final api = ServiceApi(client: FakeFailingHttpClient());
+    final repository = ServiceRepository(api: api, cache: cacheService);
 
     final services = await repository.getServices();
 
-    expect(services.length, 1);
-    expect(services.first.name, 'GitHub');
-    expect(services.first.status, ServiceStatus.operational);
-    expect(services.first.responseTime, 120);
+    expect(services.length, 8);
+    expect(services.map((service) => service.name).toSet(),
+        equals(serviceNames.toSet()));
   });
 }
