@@ -73,7 +73,7 @@ class Parametres extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
               value: serviceProvider.autoRefreshEnabled,
-              activeColor: const Color(0xff2196f3),
+              activeThumbColor: const Color(0xff2196f3),
               onChanged: (val) {
                 serviceProvider.setAutoRefresh(val);
               },
@@ -100,7 +100,7 @@ class Parametres extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: textColor),
               ),
               value: serviceProvider.offlineModeEnabled,
-              activeColor: const Color(0xff2196f3),
+              activeThumbColor: const Color(0xff2196f3),
               onChanged: (val) {
                 serviceProvider.setOfflineMode(val);
               },
@@ -155,21 +155,23 @@ class Parametres extends StatelessWidget {
         title: Text(l10n.interval),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: intervals.map((minutes) {
-              return RadioListTile<int>(
-                title: Text(l10n.minutes(minutes)),
-                value: minutes,
-                groupValue: serviceProvider.intervalInMinutes,
-                onChanged: (val) {
-                  if (val != null) {
-                    serviceProvider.setInterval(val);
-                    Navigator.pop(context);
-                  }
-                },
-              );
-            }).toList(),
+          child: RadioGroup<int>(
+            groupValue: serviceProvider.intervalInMinutes,
+            onChanged: (val) {
+              if (val != null) {
+                serviceProvider.setInterval(val);
+                Navigator.pop(context);
+              }
+            },
+            child: ListView(
+              shrinkWrap: true,
+              children: intervals.map((minutes) {
+                return RadioListTile<int>(
+                  title: Text(l10n.minutes(minutes)),
+                  value: minutes,
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),
@@ -187,43 +189,31 @@ class Parametres extends StatelessWidget {
         title: Text(l10n.chooseTheme),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              RadioListTile<ThemeMode>(
-                title: Text(l10n.systemTheme),
-                value: ThemeMode.system,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  if (val != null) {
-                    themeNotifier.setTheme(val);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: Text(l10n.lightTheme),
-                value: ThemeMode.light,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  if (val != null) {
-                    themeNotifier.setTheme(val);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: Text(l10n.darkTheme),
-                value: ThemeMode.dark,
-                groupValue: themeNotifier.themeMode,
-                onChanged: (val) {
-                  if (val != null) {
-                    themeNotifier.setTheme(val);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
+          child: RadioGroup<ThemeMode>(
+            groupValue: themeNotifier.themeMode,
+            onChanged: (val) {
+              if (val != null) {
+                themeNotifier.setTheme(val);
+                Navigator.pop(context);
+              }
+            },
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                RadioListTile<ThemeMode>(
+                  title: Text(l10n.systemTheme),
+                  value: ThemeMode.system,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text(l10n.lightTheme),
+                  value: ThemeMode.light,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text(l10n.darkTheme),
+                  value: ThemeMode.dark,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -241,32 +231,27 @@ class Parametres extends StatelessWidget {
         title: Text(l10n.chooseLanguage),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              RadioListTile<String>(
-                title: Text(l10n.french),
-                value: 'fr',
-                groupValue: localeNotifier.locale.languageCode,
-                onChanged: (val) {
-                  if (val != null) {
-                    localeNotifier.setLocale(Locale(val));
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              RadioListTile<String>(
-                title: Text(l10n.english),
-                value: 'en',
-                groupValue: localeNotifier.locale.languageCode,
-                onChanged: (val) {
-                  if (val != null) {
-                    localeNotifier.setLocale(Locale(val));
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
+          child: RadioGroup<String>(
+            groupValue: localeNotifier.locale.languageCode,
+            onChanged: (val) {
+              if (val != null) {
+                localeNotifier.setLocale(Locale(val));
+                Navigator.pop(context);
+              }
+            },
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                RadioListTile<String>(
+                  title: Text(l10n.french),
+                  value: 'fr',
+                ),
+                RadioListTile<String>(
+                  title: Text(l10n.english),
+                  value: 'en',
+                ),
+              ],
+            ),
           ),
         ),
       ),
