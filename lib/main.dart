@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:statusdesk/l10n/app_localizations.dart';
 
 import 'core/storage/hive_config.dart';
 import 'pages/dashboard_screen.dart';
+import 'providers/locale_provider.dart'; // <--- Import du provider de langue
 import 'providers/service_provider.dart';
-import 'providers/theme_provider.dart'; // <--- Import du provider de thème
+import 'providers/theme_provider.dart';
 import 'repositories/service_repository.dart';
 import 'services/cache_service.dart';
 import 'services/service_api.dart';
@@ -14,7 +16,6 @@ Future<void> main() async {
   await HiveConfig.init();
   await CacheService.init();
 
-  // Initialisation du gestionnaire de thème
   final themeNotifier = ThemeNotifier();
   await themeNotifier.loadTheme();
 
@@ -23,14 +24,18 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider.value(value: themeNotifier),
         ChangeNotifierProvider(
-          create: (_) => ServiceProvider(
-            repository: ServiceRepository(
-              api: ServiceApi(),
-              cache: CacheService(),
-            ),
-          )
-            ..initialize()
-            ..startPolling(),
+          create: (_) => LocaleNotifier(),
+        ), // <--- Ajouté ici
+        ChangeNotifierProvider(
+          create: (_) =>
+              ServiceProvider(
+                  repository: ServiceRepository(
+                    api: ServiceApi(),
+                    cache: CacheService(),
+                  ),
+                )
+                ..initialize()
+                ..startPolling(),
         ),
       ],
       child: const MyApp(),
@@ -43,13 +48,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // On écoute le thème en temps réel
     final themeNotifier = context.watch<ThemeNotifier>();
+    final localeNotifier = context
+        .watch<LocaleNotifier>(); // <--- Écoute de la langue
 
     return MaterialApp(
       title: 'StatusDesk',
       debugShowCheckedModeBanner: false,
-      themeMode: themeNotifier.themeMode, // <--- Applique le mode (System/Light/Dark)
+
+      // Configuration des langues
+      locale: localeNotifier.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+
+      themeMode: themeNotifier.themeMode,
       theme: ThemeData(
         colorSchemeSeed: Colors.indigo,
         useMaterial3: true,
@@ -60,7 +72,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.dark,
       ),
-      home: DashboardScreen(), // <--- Corrigé (sans 'const')
+      home: const DashboardScreen(),
     );
   }
 }
